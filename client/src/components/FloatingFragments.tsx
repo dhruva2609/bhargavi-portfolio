@@ -3,6 +3,25 @@ import { useFrame } from '@react-three/fiber';
 import { Float, Text } from '@react-three/drei';
 import * as THREE from 'three';
 
+const FloatingPaper = ({ position = [0, 0, 0] }: { position: [number, number, number] }) => {
+    const mesh = useRef<THREE.Mesh>(null);
+    useFrame((state) => {
+        if (mesh.current) {
+            mesh.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.2;
+            mesh.current.rotation.z = Math.cos(state.clock.getElapsedTime() * 0.3) * 0.1;
+        }
+    });
+
+    return (
+        <Float speed={1} rotationIntensity={1} floatIntensity={1.5} position={position}>
+            <mesh ref={mesh}>
+                <planeGeometry args={[0.8, 1.1]} />
+                <meshStandardMaterial color="#FFFFFF" opacity={0.6} transparent side={THREE.DoubleSide} />
+            </mesh>
+        </Float>
+    );
+};
+
 const FloatingFragments = () => {
     const group = useRef<THREE.Group>(null);
 
@@ -50,6 +69,11 @@ const FloatingFragments = () => {
                     </mesh>
                 </Float>
             ))}
+
+            {/* Floating Paper Pages */}
+            <FloatingPaper position={[-3, -2, -5]} />
+            <FloatingPaper position={[4, 3, -8]} />
+            <FloatingPaper position={[-6, 1, -10]} />
         </group>
     );
 };

@@ -1,62 +1,74 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pearl: #F0EAE2;
-  --color-blush: #FBD7D1;
-  --color-rosegold: #B76E79;
+  --color-charcoal: #2D2D2D;
+  --color-off-white: #FAF9F6;
+  --color-muted-rosegold: #B76E79;
   --color-dream-purple: #74549A;
   --color-dream-pink: #FBD7D1;
+  --color-cherry: #FF4D8D;
+  --color-sage: #B8C5B3;
+  --color-pearl: #FAF9F6;
+  --color-glass-bg: rgba(255, 255, 255, 0.4);
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @layer base {
   html, body {
     margin: 0;
     padding: 0;
-    font-family: "Montserrat", sans-serif;
+    font-family: "Cormorant Garamond", serif;
     -webkit-font-smoothing: antialiased;
-    background: #F0EAE2;
-  }
-
-  .dream-bg {
-    background-attachment: fixed;
+    color: var(--color-charcoal);
+    background: var(--color-pearl);
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: "Cormorant Garamond", serif;
-    color: #74549A;
+    color: var(--color-charcoal);
+    font-weight: 300;
   }
 }
 
 @layer components {
-  /* Sticker-Style UI Class */
-  .dream-sticker {
-    @apply bg-white/40 backdrop-blur-2xl rounded-[3rem] border border-white shadow-xl;
+  /* Frosted Architectural Card - Updated for Color */
+  .editorial-card {
+    background: var(--color-glass-bg);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    border: 0.5px solid rgba(116, 84, 154, 0.1);
+    border-radius: 1.5rem;
+    box-shadow: 0 40px 100px -20px rgba(116, 84, 154, 0.08);
+    position: relative;
+    overflow: hidden;
   }
 
-  /* Custom Bubbly Button */
-  .bubbly-button {
-    @apply px-14 py-6 bg-rosegold text-white rounded-full font-sans font-bold shadow-[0_8px_0_#96525C] hover:translate-y-1 hover:shadow-[0_4px_0_#96525C] transition-all uppercase tracking-widest text-[10px];
+  .grid-asymmetric {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 2rem;
   }
 
-  /* Scrollbar */
+  .shadow-editorial {
+    box-shadow: 0 20px 80px -15px rgba(116, 84, 154, 0.1);
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 2px;
   }
+
   .custom-scrollbar::-webkit-scrollbar-track {
     background: transparent;
   }
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #FBD7D1;
-    border-radius: 10px;
+    background: var(--color-dream-purple);
+    opacity: 0.2;
   }
-}
 
-/* Utils */
-.flip-x {
-  transform: scaleX(-1);
-}
-
-.perspective-1000 {
-  perspective: 1000px;
+  .text-outline {
+    -webkit-text-stroke: 1px var(--color-charcoal);
+    color: transparent;
+  }
 }

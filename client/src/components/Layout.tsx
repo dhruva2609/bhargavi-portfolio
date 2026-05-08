@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Sparkles } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, BookOpen, PenTool, Sparkles, Music } from 'lucide-react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 const InstagramIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -10,39 +11,80 @@ const InstagramIcon = ({ size = 20 }) => (
     </svg>
 );
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const CustomCursor = () => {
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const springX = useSpring(mouseX, { stiffness: 500, damping: 28 });
+    const springY = useSpring(mouseY, { stiffness: 500, damping: 28 });
+
+    React.useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            mouseX.set(e.clientX - 20);
+            mouseY.set(e.clientY - 20);
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
     return (
-        <div className="min-h-screen bg-transparent relative overflow-x-hidden">
+        <motion.div
+            style={{ x: springX, y: springY }}
+            className="fixed top-0 left-0 w-10 h-10 border border-dream-purple/20 bg-dream-pink/5 rounded-full pointer-events-none z-[9999] hidden md:block"
+        />
+    );
+};
+
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const location = useLocation();
+
+    const navLinks = [
+        { path: '/', label: 'Home', icon: <Home size={15} /> },
+        { path: '/snippets', label: 'Archive', icon: <BookOpen size={15} /> },
+        { path: '/muse', label: 'Muse', icon: <Sparkles size={15} /> },
+        { path: '/songs', label: 'Melodies', icon: <Music size={15} /> },
+        { path: '/write', label: 'Create', icon: <PenTool size={15} /> },
+    ];
+
+    return (
+        <div className="min-h-screen bg-transparent relative overflow-x-hidden selection:bg-dream-pink/20">
+            <CustomCursor />
             {/* Floating Pill Navbar */}
-            <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[100] px-6 md:px-8 py-3 bg-dream-purple rounded-full shadow-2xl flex items-center gap-6 md:gap-10 border border-white/20 backdrop-blur-md w-[90%] md:w-auto justify-center">
-                <Link to="/" className="flex items-center gap-2 text-white hover:text-dream-pink transition-colors group">
-                    <Home size={16} className="group-hover:scale-110 transition-transform" />
-                    <span className="font-sans text-[9px] uppercase tracking-widest font-bold hidden md:inline">Home</span>
-                </Link>
-                <Link to="/snippets" className="flex items-center gap-2 text-white hover:text-dream-pink transition-colors group">
-                    <BookOpen size={16} className="group-hover:scale-110 transition-transform" />
-                    <span className="font-sans text-[9px] uppercase tracking-widest font-bold hidden md:inline">Archive</span>
-                </Link>
-                <Link to="/muse" className="flex items-center gap-2 text-white hover:text-dream-pink transition-colors group">
-                    <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
-                    <span className="font-sans text-[9px] uppercase tracking-widest font-bold hidden md:inline">Muse</span>
-                </Link>
-                <Link to="/write" className="flex items-center gap-2 text-white hover:text-dream-pink transition-colors group">
-                    <PenTool size={16} className="group-hover:scale-110 transition-transform" />
-                    <span className="font-sans text-[9px] uppercase tracking-widest font-bold hidden md:inline">Create</span>
-                </Link>
+            <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-8 py-4 editorial-card flex items-center gap-8 md:gap-12 bg-white/60">
+                {navLinks.map((link) => (
+                    <Link
+                        key={link.path}
+                        to={link.path}
+                        className={`flex items-center gap-3 transition-all duration-500 hover:text-cherry group ${
+                            location.pathname === link.path ? 'text-dream-purple' : 'text-dream-purple/40'
+                        }`}
+                    >
+                        <div className="group-hover:scale-110 transition-transform">
+                            {link.icon}
+                        </div>
+                        <span className="font-sans text-[9px] uppercase tracking-[0.3em] font-bold hidden md:inline">
+                            {link.label}
+                        </span>
+                    </Link>
+                ))}
             </nav>
 
-            {/* Left Social Pill - Hide on very small mobile, show on tablet+ */}
-            <div className="fixed left-4 md:left-6 top-1/2 -translate-y-1/2 z-[100] p-3 bg-white/40 backdrop-blur-md rounded-full border border-white flex flex-col gap-6 shadow-xl hidden md:flex">
-                <a href="https://instagram.com/scenarios.to.scenes" target="_blank" rel="noreferrer" className="text-dream-purple hover:text-cherry transition-colors">
+            {/* Left Social Pill */}
+            <div className="fixed left-8 top-1/2 -translate-y-1/2 z-[100] p-4 editorial-card flex flex-col gap-8 shadow-editorial hidden lg:flex bg-white/80">
+                <a href="https://instagram.com/scenarios.to.scenes" target="_blank" rel="noreferrer" className="text-dream-purple/60 hover:text-cherry transition-colors">
                     <InstagramIcon size={18} />
                 </a>
-                <div className="w-4 h-[1px] bg-dream-purple/20 mx-auto" />
-                <Sparkles size={18} className="text-dream-purple/40" />
+                <div className="w-4 h-[1px] bg-dream-purple/10 mx-auto" />
+                <Sparkles size={18} className="text-dream-purple/20" />
             </div>
 
             <main>{children}</main>
+
+            {/* Minimal Footer */}
+            <footer className="relative z-10 py-20 px-6 text-center border-t border-dream-purple/5 bg-off-white">
+                <p className="font-serif text-dream-purple/30 italic text-xl">
+                    © 2024 Bhargavi. All rights reserved.
+                </p>
+            </footer>
         </div>
     );
 };

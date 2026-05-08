@@ -4,6 +4,7 @@ import Feed from './pages/Feed';
 import Creator from './pages/Creator'; // New Import
 import Reader from './pages/Reader';
 import Muse from './pages/Muse';
+import Songs from './pages/Songs';
 import Layout from './components/Layout';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
                 <Route path="/snippets" element={<Feed />} />
                 <Route path="/write" element={<Creator />} /> {/* Secure Posting Path */}
                 <Route path="/muse" element={<Muse />} />
+                <Route path="/songs" element={<Songs />} />
                 <Route path="/read/:slug" element={<Reader />} />
             </Routes>
         </Layout>

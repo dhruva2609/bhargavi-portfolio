@@ -9,8 +9,6 @@ export const Cloud = ({ className }: { className?: string }) => (
     </svg>
 );
 
-export const BubblyCloud = Cloud;
-
 export const BubblyTree = ({ className }: { className?: string }) => (
     <svg viewBox="0 0 200 300" className={className}>
         {/* Trunk */}

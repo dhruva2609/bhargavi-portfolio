@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import Scene3D from '../components/Scene3D';
 
 const Creator = () => {
     const [type, setType] = useState<'snippet' | 'story'>('snippet');
@@ -18,49 +19,61 @@ const Creator = () => {
     };
 
     return (
-        <div className="min-h-screen pt-32 px-6">
+        <div className="min-h-screen pt-48 pb-32 px-6 bg-off-white">
+            <Scene3D mouse={{ x: 0, y: 0 }} />
+            
             <motion.div 
-                initial={{ opacity: 0, y: 20 }} 
+                initial={{ opacity: 0, y: 30 }} 
                 animate={{ opacity: 1, y: 0 }} 
-                className="max-w-2xl mx-auto dream-glass p-12 shadow-soft"
+                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                className="max-w-2xl mx-auto editorial-card p-12 md:p-20 relative z-10"
             >
-                <h2 className="font-serif text-5xl mb-10 text-dream-purple italic text-center">New Creation</h2>
+                <div className="text-center mb-16">
+                    <span className="font-sans text-[10px] tracking-[0.6em] text-muted-rosegold uppercase font-bold mb-6 block">The Studio</span>
+                    <h2 className="font-serif text-6xl text-dream-purple italic font-light tracking-tighter">New Creation</h2>
+                </div>
                 
-                <div className="flex gap-4 mb-12 justify-center">
+                <div className="flex gap-6 mb-16 justify-center">
                     {['snippet', 'story'].map((t) => (
                         <button
                             key={t}
                             onClick={() => setType(t as any)}
-                            className={`px-8 py-3 rounded-full text-[10px] uppercase tracking-widest font-bold transition-all ${type === t ? 'bg-dream-purple text-white shadow-lg' : 'bg-dream-purple/10 text-dream-purple hover:bg-dream-purple/20'}`}
+                            className={`px-10 py-3 rounded-full text-[9px] uppercase tracking-[0.4em] font-bold transition-all duration-500 ${
+                                type === t 
+                                ? 'bg-dream-purple text-white shadow-editorial' 
+                                : 'bg-dream-purple/5 text-dream-purple hover:bg-dream-purple/10'
+                            }`}
                         >
                             {t}
                         </button>
                     ))}
                 </div>
 
-                <div className="space-y-8">
+                <div className="space-y-12">
                     {type === 'story' && (
                         <motion.input
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             type="text"
                             placeholder="Title of the Work"
-                            className="w-full bg-transparent border-b border-dream-purple/20 p-4 font-serif text-3xl outline-none placeholder:text-dream-purple/30 focus:border-dream-purple/50 transition-colors"
+                            className="w-full bg-transparent border-b border-dream-purple/10 p-6 font-serif text-4xl outline-none placeholder:text-dream-purple/20 focus:border-dream-purple/30 transition-colors"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         />
                     )}
                     <textarea
-                        className="w-full bg-transparent border border-dream-purple/20 rounded-[2rem] p-8 font-serif text-xl outline-none focus:border-dream-purple/50 transition-all min-h-[300px] placeholder:text-dream-purple/30"
+                        className="w-full bg-transparent border border-dream-purple/10 rounded-[2rem] p-8 md:p-12 font-serif text-xl md:text-2xl outline-none focus:border-dream-purple/30 transition-all min-h-[400px] placeholder:text-dream-purple/20 leading-relaxed custom-scrollbar"
                         placeholder={type === 'snippet' ? "Write a fragment..." : "Write the narrative..."}
                         value={formData.body}
                         onChange={(e) => setFormData({ ...formData, body: e.target.value })}
                     />
+                    
                     <button 
                         onClick={handlePublish} 
-                        className="w-full py-5 bg-dream-purple text-white rounded-[1.5rem] font-serif text-2xl hover:bg-dream-purple/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg"
+                        className="group relative w-full py-6 bg-dream-purple text-white rounded-[1.5rem] overflow-hidden transition-all duration-700 hover:shadow-editorial active:scale-[0.98]"
                     >
-                        Publish to Archive
+                        <span className="relative z-10 font-serif text-2xl italic">Publish to Archive</span>
+                        <div className="absolute inset-0 bg-cherry scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 ease-editorial" />
                     </button>
                 </div>
             </motion.div>
