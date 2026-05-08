@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core Palette */
+  --color-pearl: #FFFBF2;
+  --color-blush: #FFE4E1;
+  --color-rosegold: #E7C1B1;
+  --color-sage: #B2AC88;
+  --color-charcoal: #2D2D2D;
+
+  /* Typography */
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Montserrat", sans-serif;
+
+  /* Soft Shadows for that girly look */
+  --shadow-soft: 0 10px 30px -5px rgba(231, 193, 177, 0.3);
+}
+
+/* Base Styles */
+@layer base {
+  :root {
+    background-color: var(--color-pearl);
+    color: var(--color-charcoal);
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    background-color: #FFFBF2 !important;
+    background: var(--color-pearl);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+}
+
+/* Custom Glassmorphism Utility */
+.glass {
+  @apply bg-white/40 backdrop-blur-md border border-white/60 shadow-soft;
+}
