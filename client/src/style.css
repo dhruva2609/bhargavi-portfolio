@@ -1,45 +1,62 @@
 @import "tailwindcss";
 
 @theme {
-  /* Core Palette */
-  --color-pearl: #FFFBF2;
-  --color-blush: #FFE4E1;
-  --color-rosegold: #E7C1B1;
-  --color-sage: #B2AC88;
-  --color-charcoal: #2D2D2D;
-
-  /* Typography */
-  --font-serif: "Cormorant Garamond", serif;
-  --font-sans: "Montserrat", sans-serif;
-
-  /* Soft Shadows for that girly look */
-  --shadow-soft: 0 10px 30px -5px rgba(231, 193, 177, 0.3);
+  --color-pearl: #F0EAE2;
+  --color-blush: #FBD7D1;
+  --color-rosegold: #B76E79;
+  --color-dream-purple: #74549A;
+  --color-dream-pink: #FBD7D1;
 }
 
-/* Base Styles */
 @layer base {
-  :root {
-    background-color: var(--color-pearl);
-    color: var(--color-charcoal);
-  }
-
-  body {
+  html, body {
     margin: 0;
-    font-family: var(--font-sans);
+    padding: 0;
+    font-family: "Montserrat", sans-serif;
     -webkit-font-smoothing: antialiased;
-    background-color: #FFFBF2 !important;
-    background: var(--color-pearl);
+    background: #F0EAE2;
   }
 
-  h1,
-  h2,
-  h3,
-  .font-serif {
-    font-family: var(--font-serif);
+  .dream-bg {
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Cormorant Garamond", serif;
+    color: #74549A;
   }
 }
 
-/* Custom Glassmorphism Utility */
-.glass {
-  @apply bg-white/40 backdrop-blur-md border border-white/60 shadow-soft;
+@layer components {
+  /* Sticker-Style UI Class */
+  .dream-sticker {
+    @apply bg-white/40 backdrop-blur-2xl rounded-[3rem] border border-white shadow-xl;
+  }
+
+  /* Custom Bubbly Button */
+  .bubbly-button {
+    @apply px-14 py-6 bg-rosegold text-white rounded-full font-sans font-bold shadow-[0_8px_0_#96525C] hover:translate-y-1 hover:shadow-[0_4px_0_#96525C] transition-all uppercase tracking-widest text-[10px];
+  }
+
+  /* Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FBD7D1;
+    border-radius: 10px;
+  }
+}
+
+/* Utils */
+.flip-x {
+  transform: scaleX(-1);
+}
+
+.perspective-1000 {
+  perspective: 1000px;
 }

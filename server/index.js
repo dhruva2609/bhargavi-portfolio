@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import contentRouter from './routes/content.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,7 +25,9 @@ mongoose.connect(MONGO_URI)
   .then(() => console.log('✨ Poetic connection to MongoDB established.'))
   .catch(err => console.error('🥀 Connection to the inkwell failed:', err));
 
-// Basic Routes (Placeholders - will be expanded)
+// Routes
+app.use('/api/content', contentRouter);
+
 app.get('/', (req, res) => {
   res.send('The Writer\'s Sanctuary is online.');
 });

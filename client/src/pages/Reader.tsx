@@ -1,8 +1,6 @@
-import { useParams } from 'react-router-dom';
 import { motion, useScroll, useSpring } from 'framer-motion';
 
 const Reader = () => {
-    const { slug } = useParams();
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
