@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import Scene3D from '../components/Scene3D';
 
 const Creator = () => {
     const [type, setType] = useState<'snippet' | 'story'>('snippet');
@@ -19,8 +18,7 @@ const Creator = () => {
     };
 
     return (
-        <div className="min-h-screen pt-48 pb-32 px-6 bg-off-white">
-            <Scene3D mouse={{ x: 0, y: 0 }} />
+        <div className="min-h-screen pt-48 pb-32 px-6 bg-transparent">
             
             <motion.div 
                 initial={{ opacity: 0, y: 30 }} 
@@ -29,8 +27,8 @@ const Creator = () => {
                 className="max-w-2xl mx-auto editorial-card p-12 md:p-20 relative z-10"
             >
                 <div className="text-center mb-16">
-                    <span className="font-sans text-[10px] tracking-[0.6em] text-muted-rosegold uppercase font-bold mb-6 block">The Studio</span>
-                    <h2 className="font-serif text-6xl text-dream-purple italic font-light tracking-tighter">New Creation</h2>
+                    <span className="metadata-precise text-muted-rosegold mb-6 block">The Studio</span>
+                    <h2 className="font-serif text-[clamp(3rem,6vw,6rem)] text-dream-purple italic font-light tracking-tighter leading-none">New Creation</h2>
                 </div>
                 
                 <div className="flex gap-6 mb-16 justify-center">
@@ -38,7 +36,7 @@ const Creator = () => {
                         <button
                             key={t}
                             onClick={() => setType(t as any)}
-                            className={`px-10 py-3 rounded-full text-[9px] uppercase tracking-[0.4em] font-bold transition-all duration-500 ${
+                            className={`px-10 py-3 rounded-full metadata-precise transition-all duration-500 ${
                                 type === t 
                                 ? 'bg-dream-purple text-white shadow-editorial' 
                                 : 'bg-dream-purple/5 text-dream-purple hover:bg-dream-purple/10'

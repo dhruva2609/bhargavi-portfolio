@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const Muse = () => {
     return (
-        <div className="bg-off-white min-h-screen pt-48 pb-32 px-6">
+        <div className="bg-transparent min-h-screen pt-48 pb-32 px-6">
             <div className="max-w-4xl mx-auto text-center">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -19,10 +19,10 @@ const Muse = () => {
                         <span className="font-serif text-8xl text-dream-purple/10 select-none relative z-10">B</span>
                     </div>
 
-                    <span className="font-sans text-[10px] tracking-[0.6em] text-muted-rosegold uppercase font-bold mb-8 block">
+                    <span className="metadata-precise text-muted-rosegold mb-8 block">
                         The Narrative
                     </span>
-                    <h2 className="font-serif text-6xl md:text-8xl text-dream-purple mb-20 italic font-light tracking-tighter leading-none">
+                    <h2 className="font-serif text-[clamp(3rem,8vw,8rem)] text-dream-purple mb-20 italic font-light tracking-tighter leading-none">
                         The Woman <br/> Behind the <i className="text-cherry font-normal">Ink</i>
                     </h2>
 

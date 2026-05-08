@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import React, { useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 
 interface FloatingBookProps {
     title: string;
@@ -7,14 +7,25 @@ interface FloatingBookProps {
 }
 
 const FloatingBook: React.FC<FloatingBookProps> = ({ title, subtitle }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
     const x = useMotionValue(0);
     const y = useMotionValue(0);
 
     const mouseXSpring = useSpring(x, { stiffness: 100, damping: 30 });
     const mouseYSpring = useSpring(y, { stiffness: 100, damping: 30 });
 
-    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["20deg", "-20deg"]);
-    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-20deg", "20deg"]);
+    const mouseRotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["20deg", "-20deg"]);
+    const mouseRotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-20deg", "20deg"]);
+
+    // Tie scrolling to the book's vertical position and slight tilt
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start end", "end start"]
+    });
+    
+    // Parallax values: moves up/down and adds a dynamic scroll tilt
+    const scrollY = useTransform(scrollYProgress, [0, 1], [-100, 150]);
+    const scrollRotateZ = useTransform(scrollYProgress, [0, 1], ["-5deg", "15deg"]);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -27,11 +38,17 @@ const FloatingBook: React.FC<FloatingBookProps> = ({ title, subtitle }) => {
     };
 
     return (
-        <div className="perspective-[1000px] flex items-center justify-center p-10">
+        <div ref={containerRef} className="perspective-[1000px] flex items-center justify-center p-10">
             <motion.div
                 onMouseMove={handleMouseMove}
                 onMouseLeave={() => { x.set(0); y.set(0); }}
-                style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+                style={{ 
+                    rotateX: mouseRotateX, 
+                    rotateY: mouseRotateY, 
+                    rotateZ: scrollRotateZ,
+                    y: scrollY,
+                    transformStyle: "preserve-3d" 
+                }}
                 className="relative w-72 h-[450px] editorial-card cursor-pointer group bg-white/40"
             >
                 {/* 3D Content Layers */}

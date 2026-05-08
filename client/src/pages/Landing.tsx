@@ -1,27 +1,12 @@
-import { useState, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import Scene3D from "../components/Scene3D";
+import { motion, useScroll } from "framer-motion";
+import type { BezierDefinition } from "framer-motion";
 import SnippetCard from '../components/SnippetCard';
 import FloatingBook from '../components/FloatingBook';
 import { useNarrative } from '../hooks/useNarrative';
 
 const Landing = () => {
-    const [mouse, setMouse] = useState({ x: 0, y: 0 });
     const { data: posts, loading } = useNarrative('snippets');
-    const containerRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll();
-
-    // Signature Intro Animations
-    const introOpacity = useTransform(scrollYProgress, [0, 0.15], [0.08, 0]);
-    const introBlur = useTransform(scrollYProgress, [0, 0.15], [0, 20]);
-    const introScale = useTransform(scrollYProgress, [0, 0.15], [1, 1.2]);
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-        setMouse({
-            x: (e.clientX / window.innerWidth) - 0.5,
-            y: -(e.clientY / window.innerHeight) + 0.5,
-        });
-    };
 
     const instagramPosts = [
         { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "First Bloom", image: "/assets/images/arch.png" },
@@ -30,44 +15,28 @@ const Landing = () => {
         { url: "https://www.instagram.com/p/DX-sfYmistG/", label: "Final Chapter", image: "/assets/images/abstract.png" }
     ];
 
+    const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
+
     return (
         <div
-            ref={containerRef}
-            onMouseMove={handleMouseMove}
-            className="relative bg-off-white min-h-[400vh] selection:bg-dream-pink/20"
+            className="relative min-h-[300vh] selection:bg-dream-pink/20 overflow-hidden"
         >
-            <Scene3D mouse={mouse} />
-
-            {/* Signature Intro: Fixed Title */}
-            <motion.div
-                style={{ 
-                    opacity: introOpacity, 
-                    filter: `blur(${introBlur}px)`,
-                    scale: introScale,
-                    pointerEvents: 'none'
-                }}
-                className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
-            >
-                <h1 className="text-[clamp(4rem,20vw,20rem)] font-serif font-black tracking-tighter text-dream-purple select-none uppercase">
-                    Bhargavi
-                </h1>
-            </motion.div>
-
             {/* Content Layers */}
             <div className="relative z-10">
                 
-                {/* Section 1: Hero / Minimal Start */}
-                <section className="min-h-screen flex flex-col md:flex-row items-center justify-center px-6 md:px-24 gap-12 pt-32 md:pt-0">
+                {/* Section 1: Hero / Architectural Intro */}
+                <section className="min-h-screen flex flex-col md:flex-row items-center justify-center px-6 md:px-24 gap-12 pt-32 md:pt-0 relative">
+                    
                     <motion.div 
                         initial={{ opacity: 0, x: -30 }}
                         whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 1.5, ease: editorialEase }}
                         className="max-w-4xl text-center md:text-left flex-1"
                     >
-                        <span className="font-sans text-[10px] tracking-[0.6em] text-muted-rosegold uppercase font-bold mb-8 block">
-                            Editorial Archive 2024
+                        <span className="metadata-precise text-muted-rosegold mb-8 block">
+                            Editorial Archive 2026
                         </span>
-                        <h2 className="text-[clamp(2.5rem,8vw,8rem)] text-charcoal mb-12 leading-none">
+                        <h2 className="text-[clamp(2.5rem,5vw,5rem)] text-charcoal mb-12 leading-none">
                             Architect of <br/> <i className="text-dream-purple font-light">Unspoken</i> Scenes
                         </h2>
                         <p className="font-serif italic text-dream-purple/40 text-lg md:text-2xl max-w-md">
@@ -78,25 +47,36 @@ const Landing = () => {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 1.5, ease: editorialEase }}
                         className="flex-1 flex justify-center"
                     >
-                        <FloatingBook title="Fragments" subtitle="Selected Echoes 2024" />
+                        <FloatingBook title="Fragments" subtitle="Selected Echoes 2026" />
                     </motion.div>
                 </section>
 
-                {/* Section 2: Echoes (Split Screen Archive) */}
-                <section className="min-h-screen grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5">
+                {/* Section 2: Split-Screen Archive (The Echoes) */}
+                <section className="min-h-screen grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5 relative">
+                    
+                    {/* Left: Sticky Massive Title */}
                     <div className="lg:col-span-4 lg:h-screen lg:sticky lg:top-0 flex flex-col justify-center p-8 md:p-24 border-r border-dream-purple/5">
-                        <span className="font-sans text-[10px] tracking-[0.6em] text-muted-rosegold uppercase font-bold mb-6 block">01 / Echoes</span>
-                        <h2 className="text-6xl md:text-8xl text-dream-purple italic mb-8">Echoes</h2>
-                        <p className="text-charcoal/60 text-lg md:text-xl leading-relaxed max-w-sm">
+                        <span className="metadata-precise text-muted-rosegold mb-6 block">01 / Echoes</span>
+                        <h2 className="text-[clamp(4rem,8vw,8rem)] text-dream-purple italic mb-8 font-serif tracking-tighter leading-none">Echoes</h2>
+                        <p className="text-charcoal/60 text-lg md:text-xl leading-relaxed max-w-sm font-serif italic">
                             A vertically curated feed of architectural fragments and literary snapshots.
                         </p>
                     </div>
                     
-                    <div className="lg:col-span-8 p-6 md:p-24 bg-dream-pink/[0.03]">
-                        <div className="flex flex-col gap-12 md:gap-24 max-w-2xl mx-auto">
+                    {/* Right: Scrollable Feed */}
+                    <div className="lg:col-span-8 p-6 md:p-24 bg-transparent">
+                        <motion.div 
+                            variants={{
+                                visible: { transition: { staggerChildren: 0.15 } }
+                            }}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: false, amount: 0.1 }}
+                            className="flex flex-col gap-12 md:gap-24 max-w-2xl mx-auto"
+                        >
                             {loading ? (
                                 <div className="h-screen flex items-center justify-center">
                                     <p className="text-muted-rosegold animate-pulse tracking-widest uppercase text-xs">Curating fragments...</p>
@@ -110,27 +90,38 @@ const Landing = () => {
                                     />
                                 ))
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
 
-                {/* Section 3: Scenes (Asymmetric Grid) */}
-                <section className="py-24 md:py-64 px-6 md:px-24">
+                {/* Section 3: Visual Grammar */}
+                <section className="py-24 md:py-48 px-6 md:px-24 relative overflow-hidden">
+                    
                     <div className="mb-24 md:mb-48 text-center md:text-left">
-                        <span className="font-sans text-[10px] tracking-[0.6em] text-muted-rosegold uppercase font-bold mb-6 block">02 / Scenes</span>
-                        <h2 className="text-[clamp(3rem,9vw,9rem)] text-charcoal">Visual <i className="text-cherry font-light">Grammar</i></h2>
+                        <span className="metadata-precise text-muted-rosegold mb-6 block">02 / Scenes</span>
+                        <h2 className="text-[clamp(3rem,6vw,6rem)] text-charcoal">Visual <i className="text-cherry font-light">Grammar</i></h2>
                     </div>
 
-                    <div className="grid-asymmetric">
+                    <motion.div 
+                        variants={{
+                            visible: { transition: { staggerChildren: 0.1, ease: editorialEase } }
+                        }}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: false, amount: 0.1 }}
+                        className="grid-asymmetric"
+                    >
                         {instagramPosts.map((post, i) => (
                             <motion.a
                                 key={i}
                                 href={post.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                initial={{ opacity: 0, y: 50 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 1, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                                variants={{
+                                    hidden: { opacity: 0, y: 50 },
+                                    visible: { opacity: 1, y: 0 }
+                                }}
+                                transition={{ duration: 1.2, ease: editorialEase }}
                                 className={`editorial-card group relative aspect-[4/5] overflow-hidden ${
                                     i % 4 === 0 ? 'col-span-12 md:col-span-7' :
                                     i % 4 === 1 ? 'col-span-12 md:col-span-5 lg:mt-24' :
@@ -145,7 +136,7 @@ const Landing = () => {
                                 />
                                 <div className="absolute inset-0 bg-dream-purple/[0.05] group-hover:bg-dream-purple/0 transition-colors duration-700" />
                                 <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-dream-purple/40 to-transparent">
-                                    <span className="text-white font-sans text-[10px] tracking-[0.4em] uppercase mb-4">Instagram</span>
+                                    <span className="text-white metadata-precise mb-4">Instagram</span>
                                     <h3 className="text-white text-4xl italic">{post.label}</h3>
                                 </div>
                                 <div className="absolute top-8 right-8 w-12 h-12 border border-white/20 rounded-full flex items-center justify-center text-white group-hover:bg-cherry group-hover:text-white transition-all duration-500">
@@ -153,28 +144,28 @@ const Landing = () => {
                                 </div>
                             </motion.a>
                         ))}
-                    </div>
+                    </motion.div>
                 </section>
 
-                {/* Section 4: The Sanctuary (Final Reveal) */}
-                <section className="min-h-screen flex flex-col items-center justify-center p-6 bg-dream-purple text-off-white overflow-hidden relative">
+                {/* Section 4: The Sanctuary */}
+                <section className="flex flex-col items-center justify-center py-16 md:py-32 px-6 bg-dream-purple text-off-white overflow-hidden relative">
                     <motion.div 
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+                        transition={{ duration: 1.5, ease: editorialEase }}
                         className="relative z-10 text-center"
                     >
-                        <span className="font-sans text-[10px] tracking-[0.6em] text-dream-pink uppercase font-bold mb-12 block">The Final Note</span>
-                        <h2 className="text-[clamp(3.5rem,12vw,12rem)] mb-12 leading-none italic font-light tracking-tighter">Sanctuary</h2>
+                        <span className="metadata-precise text-dream-pink mb-12 block">The Final Note</span>
+                        <h2 className="text-[clamp(3rem,8vw,8rem)] mb-12 leading-none italic font-light tracking-tighter">Sanctuary</h2>
                         
                         <p className="font-serif text-dream-pink/60 text-lg md:text-2xl mb-16 max-w-lg mx-auto leading-relaxed italic">
                             Where every fragment finds its place in the grand narrative of the self.
                         </p>
 
-                        <button className="group relative px-12 py-6 border border-dream-pink/20 hover:border-dream-pink transition-colors duration-500 overflow-hidden">
-                            <span className="relative z-10 font-sans text-[10px] tracking-[0.5em] uppercase font-bold text-dream-pink">Enter the Dream</span>
+                        <button className="group relative px-12 py-6 border border-dream-pink/20 hover:border-dream-pink transition-colors duration-500 overflow-hidden interactive">
+                            <span className="relative z-10 metadata-precise text-dream-pink">Enter the Dream</span>
                             <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 ease-editorial" />
-                            <span className="absolute inset-0 flex items-center justify-center font-sans text-[10px] tracking-[0.5em] uppercase font-bold text-dream-purple opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-20">Enter the Dream</span>
+                            <span className="absolute inset-0 flex items-center justify-center metadata-precise text-dream-purple opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-20">Enter the Dream</span>
                         </button>
                     </motion.div>
 

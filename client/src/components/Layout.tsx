@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, PenTool, Sparkles, Music } from 'lucide-react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { useMotionValue, useSpring, useScroll } from 'framer-motion';
+import WavyBackground from './WavyBackground';
+import Scene3D from './Scene3D';
+import FloatingGarden from './FloatingGarden';
 
 const InstagramIcon = ({ size = 20 }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -11,28 +14,7 @@ const InstagramIcon = ({ size = 20 }) => (
     </svg>
 );
 
-const CustomCursor = () => {
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-    const springX = useSpring(mouseX, { stiffness: 500, damping: 28 });
-    const springY = useSpring(mouseY, { stiffness: 500, damping: 28 });
 
-    React.useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            mouseX.set(e.clientX - 20);
-            mouseY.set(e.clientY - 20);
-        };
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, []);
-
-    return (
-        <motion.div
-            style={{ x: springX, y: springY }}
-            className="fixed top-0 left-0 w-10 h-10 border border-dream-purple/20 bg-dream-pink/5 rounded-full pointer-events-none z-[9999] hidden md:block"
-        />
-    );
-};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
@@ -45,16 +27,38 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { path: '/write', label: 'Create', icon: <PenTool size={15} /> },
     ];
 
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const springX = useSpring(mouseX, { stiffness: 50, damping: 20 });
+    const springY = useSpring(mouseY, { stiffness: 50, damping: 20 });
+
+    const { scrollYProgress } = useScroll();
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        mouseX.set((e.clientX / window.innerWidth) - 0.5);
+        mouseY.set(-(e.clientY / window.innerHeight) + 0.5);
+    };
+
     return (
-        <div className="min-h-screen bg-transparent relative overflow-x-hidden selection:bg-dream-pink/20">
-            <CustomCursor />
+        <div onMouseMove={handleMouseMove} className="min-h-screen bg-transparent relative overflow-x-hidden selection:bg-dream-pink/20">
+            <WavyBackground />
+            <FloatingGarden />
+            <Scene3D mouse={{ x: springX, y: springY }} scroll={scrollYProgress} />
+            
+            {/* Global Permanent Watermark */}
+            <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden select-none">
+                <h1 className="text-[clamp(6rem,20vw,20rem)] font-serif italic tracking-tighter text-dream-purple/[0.03] uppercase">
+                    Bhargavi
+                </h1>
+            </div>
+
             {/* Floating Pill Navbar */}
-            <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] px-8 py-4 editorial-card flex items-center gap-8 md:gap-12 bg-white/60">
+            <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[100] px-4 py-3 md:px-8 md:py-4 editorial-card flex items-center gap-6 md:gap-12 bg-white/60">
                 {navLinks.map((link) => (
                     <Link
                         key={link.path}
                         to={link.path}
-                        className={`flex items-center gap-3 transition-all duration-500 hover:text-cherry group ${
+                        className={`flex items-center gap-2 md:gap-3 transition-all duration-500 hover:text-cherry group ${
                             location.pathname === link.path ? 'text-dream-purple' : 'text-dream-purple/40'
                         }`}
                     >
@@ -80,9 +84,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <main>{children}</main>
 
             {/* Minimal Footer */}
-            <footer className="relative z-10 py-20 px-6 text-center border-t border-dream-purple/5 bg-off-white">
-                <p className="font-serif text-dream-purple/30 italic text-xl">
-                    © 2024 Bhargavi. All rights reserved.
+            <footer className="relative z-10 py-4 md:py-6 px-6 text-center border-t border-dream-purple/5 bg-transparent">
+                <p className="font-serif text-dream-purple/30 italic text-sm md:text-lg">
+                    © 2026 Bhargavi. All rights reserved.
                 </p>
             </footer>
         </div>

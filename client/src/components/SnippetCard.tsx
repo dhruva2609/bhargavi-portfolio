@@ -4,10 +4,14 @@ import { motion } from 'framer-motion';
 const SnippetCard = ({ content, date }: { content: string, date: string }) => {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { 
+                    opacity: 1, 
+                    y: 0, 
+                    transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } 
+                }
+            }}
             className="p-8 md:p-12 editorial-card group hover:shadow-editorial transition-all"
         >
             <p className="font-serif text-xl md:text-2xl text-dream-purple mb-8 leading-[1.6]">

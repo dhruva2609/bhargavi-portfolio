@@ -9,8 +9,10 @@
   --color-cherry: #FF4D8D;
   --color-sage: #B8C5B3;
   --color-pearl: #FAF9F6;
-  --color-glass-bg: rgba(255, 255, 255, 0.4);
+  --color-lavender: #E6E6FA;
+  --color-glass-bg: rgba(255, 255, 255, 0.15);
   --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --gradient-dream: linear-gradient(180deg, #FAF9F6 0%, #FDF2F0 30%, #F5F0FF 70%, #FAF9F6 100%);
 }
 
 @layer base {
@@ -20,7 +22,8 @@
     font-family: "Cormorant Garamond", serif;
     -webkit-font-smoothing: antialiased;
     color: var(--color-charcoal);
-    background: var(--color-pearl);
+    background: var(--gradient-dream);
+    background-attachment: fixed;
     overflow-x: hidden;
   }
 
@@ -32,16 +35,17 @@
 }
 
 @layer components {
-  /* Frosted Architectural Card - Updated for Color */
-  .editorial-card {
-    background: var(--color-glass-bg);
+  /* Editorial Architectural Glass */
+  .editorial-card, .dream-sticker {
+    background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border: 0.5px solid rgba(116, 84, 154, 0.1);
+    border: 0.5px solid rgba(255, 255, 255, 0.5);
     border-radius: 1.5rem;
-    box-shadow: 0 40px 100px -20px rgba(116, 84, 154, 0.08);
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05);
     position: relative;
     overflow: hidden;
+    transition: all var(--ease-editorial);
   }
 
   .grid-asymmetric {
@@ -52,6 +56,38 @@
 
   .shadow-editorial {
     box-shadow: 0 20px 80px -15px rgba(116, 84, 154, 0.1);
+  }
+
+  .ink-bleed {
+    filter: blur(0.5px) drop-shadow(0 0 15px rgba(116, 84, 154, 0.3));
+    transition: filter 2s var(--ease-editorial);
+  }
+
+  .ink-bleed-floral {
+    stroke-width: 0.5px;
+    stroke: var(--color-charcoal);
+    fill: none;
+    filter: blur(0.2px) drop-shadow(0 0 8px rgba(45, 45, 45, 0.15));
+    transition: all 1.5s var(--ease-editorial);
+  }
+
+  .metadata-precise {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5em;
+    font-weight: 700;
+  }
+
+  .calligraphy-bg {
+    position: absolute;
+    font-family: serif;
+    font-size: 15vw;
+    color: var(--color-dream-purple);
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: -1;
+    white-space: nowrap;
+    @apply ink-bleed;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

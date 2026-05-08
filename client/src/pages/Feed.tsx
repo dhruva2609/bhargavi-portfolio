@@ -20,10 +20,10 @@ const Feed = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-32 min-h-screen">
+        <div className="max-w-7xl mx-auto px-6 py-32 bg-transparent min-h-screen">
             <header className="text-center mb-24">
-                <h1 className="font-serif text-7xl text-dream-purple italic mb-4">Recent Echoes</h1>
-                <p className="font-sans text-dream-purple/60 tracking-[0.4em] uppercase text-[10px] font-bold">Selected fragments from the archive</p>
+                <h1 className="font-serif text-[clamp(3.5rem,8vw,8rem)] text-dream-purple italic mb-4 leading-none">Recent Echoes</h1>
+                <p className="metadata-precise text-dream-purple/60 block mt-6">Selected fragments from the archive</p>
             </header>
 
             <Masonry
