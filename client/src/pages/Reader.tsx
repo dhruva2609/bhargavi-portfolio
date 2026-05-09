@@ -1,5 +1,5 @@
 import { motion, useScroll, useSpring } from 'framer-motion';
-
+import penWritingSvg from '../assets/penWriting.svg';
 const Reader = () => {
     const { scrollYProgress } = useScroll();
     const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
@@ -25,6 +25,10 @@ const Reader = () => {
                         across her desk...
                     </p>
                     {/* Content would be dynamically rendered here */}
+                </div>
+                
+                <div className="mt-24 flex justify-center opacity-30">
+                    <img src={penWritingSvg} alt="Writing" className="w-24 md:w-32 hover:opacity-100 transition-opacity duration-700" />
                 </div>
             </article>
         </div>

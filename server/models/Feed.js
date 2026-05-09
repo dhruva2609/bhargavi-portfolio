@@ -2,11 +2,14 @@ import mongoose from 'mongoose';
 
 const feedSchema = new mongoose.Schema(
   {
-    content: { type: String, required: true },
+    content: { 
+      type: String, 
+      required: [true, 'Fragment content is required'], 
+      maxlength: [500, 'A fragment must be under 500 characters'],
+      trim: true 
+    },
     type: { type: String, default: 'Snippet' },
-    date: { type: String },
-    imageUrl: { type: String },
-    caption: { type: String },
+    date: { type: Date, default: Date.now }
   },
   { timestamps: true }
 );

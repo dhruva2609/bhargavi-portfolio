@@ -6,7 +6,7 @@ const WavyBackground: React.FC = () => {
         <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none opacity-80">
             {/* Top Wave: Lavender/Pink */}
             <motion.div 
-                initial={{ x: -100, y: -50 }}
+                initial={{ x: -100, y: -50, rotate: -5, scale: 1.2 }}
                 animate={{ 
                     x: [ -100, -50, -100 ],
                     y: [ -50, -30, -50 ]
@@ -15,14 +15,13 @@ const WavyBackground: React.FC = () => {
                 className="absolute top-0 left-0 w-[150vw] h-[60vh] bg-dream-pink/40"
                 style={{ 
                     borderRadius: "0 0 100% 100% / 0 0 50% 50%",
-                    transform: "rotate(-5deg) scale(1.2)",
                     filter: "blur(40px)"
                 }}
             />
 
             {/* Middle Wave: Purple */}
             <motion.div 
-                initial={{ x: 100, y: 300 }}
+                initial={{ x: 100, y: 300, rotate: 10, scale: 1.5 }}
                 animate={{ 
                     x: [ 100, 150, 100 ],
                     y: [ 300, 320, 300 ]
@@ -31,14 +30,13 @@ const WavyBackground: React.FC = () => {
                 className="absolute top-1/4 right-0 w-[120vw] h-[50vh] bg-dream-purple/20"
                 style={{ 
                     borderRadius: "100% 100% 0 0 / 50% 50% 0 0",
-                    transform: "rotate(10deg) scale(1.5)",
                     filter: "blur(50px)"
                 }}
             />
 
             {/* Bottom Wave: Cherry/Orange */}
             <motion.div 
-                initial={{ x: -200, y: 800 }}
+                initial={{ x: -200, y: 800, rotate: -8, scale: 1.3 }}
                 animate={{ 
                     x: [ -200, -150, -200 ],
                     y: [ 800, 780, 800 ]
@@ -47,7 +45,6 @@ const WavyBackground: React.FC = () => {
                 className="absolute bottom-0 left-0 w-[180vw] h-[55vh] bg-cherry/5"
                 style={{ 
                     borderRadius: "50% 50% 0 0 / 100% 100% 0 0",
-                    transform: "rotate(-8deg) scale(1.3)",
                     filter: "blur(100px)"
                 }}
             />
@@ -57,7 +54,7 @@ const WavyBackground: React.FC = () => {
                 {[...Array(6)].map((_, i) => (
                     <motion.div
                         key={i}
-                        initial={{ opacity: 0, scale: 0.5 }}
+                        initial={{ opacity: 0, scale: 0.5, rotate: 0 }}
                         animate={{ 
                             opacity: [0.3, 0.6, 0.3],
                             y: [0, -30, 0],
@@ -77,8 +74,8 @@ const WavyBackground: React.FC = () => {
                         <img 
                             src="/assets/images/flower.png" 
                             alt="Flower" 
-                            className="w-48 h-48 object-contain filter grayscale sepia brightness-110"
-                            style={{ filter: "hue-rotate(280deg) saturate(1.5)" }}
+                            className="w-48 h-48 object-contain"
+                            style={{ filter: "grayscale(100%) sepia(100%) brightness(1.1) hue-rotate(280deg) saturate(1.5)" }}
                         />
                     </motion.div>
                 ))}

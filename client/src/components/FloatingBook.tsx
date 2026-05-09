@@ -10,22 +10,22 @@ const FloatingBook: React.FC<FloatingBookProps> = ({ title, subtitle }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const x = useMotionValue(0);
     const y = useMotionValue(0);
-
-    const mouseXSpring = useSpring(x, { stiffness: 100, damping: 30 });
     const mouseYSpring = useSpring(y, { stiffness: 100, damping: 30 });
 
     const mouseRotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["20deg", "-20deg"]);
-    const mouseRotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-20deg", "20deg"]);
 
     // Tie scrolling to the book's vertical position and slight tilt
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ["start end", "end start"]
-    });
+    const { scrollYProgress } = useScroll(); // Use global scroll
     
-    // Parallax values: moves up/down and adds a dynamic scroll tilt
-    const scrollY = useTransform(scrollYProgress, [0, 1], [-100, 150]);
-    const scrollRotateZ = useTransform(scrollYProgress, [0, 1], ["-5deg", "15deg"]);
+    // Parallax values: travels along a curved trajectory (simulated via X/Y)
+    const scrollY = useTransform(scrollYProgress, [0, 0.5, 1], [0, 300, 600]);
+    const scrollX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 100, -200]);
+    const scrollRotateZ = useTransform(scrollYProgress, [0, 1], ["-5deg", "35deg"]);
+    const scrollRotateY = useTransform(scrollYProgress, [0, 1], ["0deg", "180deg"]);
+
+    // Flip pages effect tied to scroll
+    const page1Rotate = useTransform(scrollYProgress, [0, 0.3], ["0deg", "-160deg"]);
+    const page2Rotate = useTransform(scrollYProgress, [0.1, 0.4], ["0deg", "-150deg"]);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -44,12 +44,13 @@ const FloatingBook: React.FC<FloatingBookProps> = ({ title, subtitle }) => {
                 onMouseLeave={() => { x.set(0); y.set(0); }}
                 style={{ 
                     rotateX: mouseRotateX, 
-                    rotateY: mouseRotateY, 
+                    rotateY: scrollRotateY, // Override with scroll-driven physics rotation
                     rotateZ: scrollRotateZ,
                     y: scrollY,
+                    x: scrollX,
                     transformStyle: "preserve-3d" 
                 }}
-                className="relative w-72 h-[450px] editorial-card cursor-pointer group bg-white/40"
+                className="relative w-72 h-[450px] editorial-card cursor-pointer group bg-white/40 shadow-2xl"
             >
                 {/* 3D Content Layers */}
                 <div 
@@ -74,6 +75,16 @@ const FloatingBook: React.FC<FloatingBookProps> = ({ title, subtitle }) => {
                 <div 
                     style={{ transform: "translateZ(30px)" }} 
                     className="absolute inset-4 border border-dream-purple/5 rounded-[1rem] pointer-events-none"
+                />
+
+                {/* Flipping Pages */}
+                <motion.div
+                    style={{ rotateY: page1Rotate, transformOrigin: "left", transformStyle: "preserve-3d", translateZ: "10px" }}
+                    className="absolute inset-0 bg-white/60 border border-white/40 rounded-r-[1.5rem] pointer-events-none"
+                />
+                <motion.div
+                    style={{ rotateY: page2Rotate, transformOrigin: "left", transformStyle: "preserve-3d", translateZ: "20px" }}
+                    className="absolute inset-0 bg-white/40 border border-white/20 rounded-r-[1.5rem] pointer-events-none"
                 />
                 
                 {/* Book Spine Shadow effect */}

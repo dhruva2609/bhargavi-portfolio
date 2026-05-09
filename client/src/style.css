@@ -22,7 +22,7 @@
     font-family: "Cormorant Garamond", serif;
     -webkit-font-smoothing: antialiased;
     color: var(--color-charcoal);
-    background: var(--gradient-dream);
+    background: #FAF9F6;
     background-attachment: fixed;
     overflow-x: hidden;
   }
@@ -36,11 +36,23 @@
 
 @layer components {
   /* Editorial Architectural Glass */
-  .editorial-card, .dream-sticker {
+  .editorial-card {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
-    border: 0.5px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 0.5px solid #FFFFFF;
+    border-radius: 1.5rem;
+    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--ease-editorial);
+  }
+
+  .dream-sticker {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 0.5px solid #FFFFFF;
     border-radius: 1.5rem;
     box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05);
     position: relative;
@@ -59,7 +71,7 @@
   }
 
   .ink-bleed {
-    filter: blur(0.5px) drop-shadow(0 0 15px rgba(116, 84, 154, 0.3));
+    transition: filter 2s var(--ease-editorial);
     transition: filter 2s var(--ease-editorial);
   }
 
@@ -67,8 +79,12 @@
     stroke-width: 0.5px;
     stroke: var(--color-charcoal);
     fill: none;
-    filter: blur(0.2px) drop-shadow(0 0 8px rgba(45, 45, 45, 0.15));
     transition: all 1.5s var(--ease-editorial);
+    transition: all 1.5s var(--ease-editorial);
+  }
+
+  .dream-sticker svg {
+    /* Removed heavy SVG filters for performance */
   }
 
   .metadata-precise {
@@ -87,7 +103,8 @@
     pointer-events: none;
     z-index: -1;
     white-space: nowrap;
-    @apply ink-bleed;
+    transition: filter 2s var(--ease-editorial);
+    transition: filter 2s var(--ease-editorial);
   }
 
   .custom-scrollbar::-webkit-scrollbar {

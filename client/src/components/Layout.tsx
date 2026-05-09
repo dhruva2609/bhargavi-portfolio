@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Sparkles, Music } from 'lucide-react';
-import { useMotionValue, useSpring, useScroll } from 'framer-motion';
+import { Home, BookOpen, PenTool, Sparkles, Music, Mail } from 'lucide-react';
+import { useMotionValue, useSpring, useScroll, useTransform, motion } from 'framer-motion';
 import WavyBackground from './WavyBackground';
 import Scene3D from './Scene3D';
 import FloatingGarden from './FloatingGarden';
@@ -34,6 +34,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     const { scrollYProgress } = useScroll();
 
+    // Dissolving Signature Effect
+    const signatureOpacity = useTransform(scrollYProgress, [0, 0.15], [0.03, 0]);
+    const signatureBlur = useTransform(scrollYProgress, [0, 0.15], ["blur(0px)", "blur(25px)"]);
+
     const handleMouseMove = (e: React.MouseEvent) => {
         mouseX.set((e.clientX / window.innerWidth) - 0.5);
         mouseY.set(-(e.clientY / window.innerHeight) + 0.5);
@@ -44,31 +48,48 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <WavyBackground />
             <FloatingGarden />
             <Scene3D mouse={{ x: springX, y: springY }} scroll={scrollYProgress} />
-            
-            {/* Global Permanent Watermark */}
+
+            {/* Global Permanent Watermark (Dissolving Signature) */}
             <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden select-none">
-                <h1 className="text-[clamp(6rem,20vw,20rem)] font-serif italic tracking-tighter text-dream-purple/[0.03] uppercase">
+                <motion.h1
+                    style={{ opacity: signatureOpacity, filter: signatureBlur }}
+                    className="text-[clamp(6rem,20vw,20rem)] font-serif italic tracking-tighter text-dream-purple uppercase"
+                >
                     Bhargavi
-                </h1>
+                </motion.h1>
             </div>
 
             {/* Floating Pill Navbar */}
             <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[100] px-4 py-3 md:px-8 md:py-4 editorial-card flex items-center gap-6 md:gap-12 bg-white/60">
                 {navLinks.map((link) => (
-                    <Link
-                        key={link.path}
-                        to={link.path}
-                        className={`flex items-center gap-2 md:gap-3 transition-all duration-500 hover:text-cherry group ${
-                            location.pathname === link.path ? 'text-dream-purple' : 'text-dream-purple/40'
-                        }`}
-                    >
-                        <div className="group-hover:scale-110 transition-transform">
-                            {link.icon}
-                        </div>
-                        <span className="font-sans text-[9px] uppercase tracking-[0.3em] font-bold hidden md:inline">
-                            {link.label}
-                        </span>
-                    </Link>
+                    link.path !== '/snippets' ? (
+                        <Link
+                            key={link.path}
+                            to={link.path}
+                            className="flex items-center gap-2 md:gap-3 transition-all duration-500 hover:text-cherry text-dream-purple/40 group"
+                        >
+                            <div className="group-hover:scale-110 transition-transform">
+                                {link.icon}
+                            </div>
+                            <span className="font-sans text-[9px] uppercase tracking-[0.3em] font-bold hidden md:inline">
+                                {link.label}
+                            </span>
+                        </Link>
+                    ) : (
+                        <Link
+                            key={link.path}
+                            to={link.path}
+                            className={`flex items-center gap-2 md:gap-3 transition-all duration-500 hover:text-cherry group ${location.pathname === link.path ? 'text-dream-purple' : 'text-dream-purple/40'
+                                }`}
+                        >
+                            <div className="group-hover:scale-110 transition-transform">
+                                {link.icon}
+                            </div>
+                            <span className="font-sans text-[9px] uppercase tracking-[0.3em] font-bold hidden md:inline">
+                                {link.label}
+                            </span>
+                        </Link>
+                    )
                 ))}
             </nav>
 
@@ -84,8 +105,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <main>{children}</main>
 
             {/* Minimal Footer */}
-            <footer className="relative z-10 py-4 md:py-6 px-6 text-center border-t border-dream-purple/5 bg-transparent">
-                <p className="font-serif text-dream-purple/30 italic text-sm md:text-lg">
+            <footer className="relative z-10 py-6 md:py-8 px-6 text-center border-t border-dream-purple/5 bg-off-white/95 backdrop-blur-md shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+                <p className="font-serif text-dream-lavender italic text-sm md:text-lg tracking-wide">
                     © 2026 Bhargavi. All rights reserved.
                 </p>
             </footer>

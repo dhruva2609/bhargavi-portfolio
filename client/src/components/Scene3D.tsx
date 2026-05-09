@@ -4,9 +4,9 @@ import { Points, PointMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import { MotionValue } from "framer-motion";
 
-const Embers = () => {
+const Embers = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<number> } }) => {
     const ref = useRef<THREE.Points>(null);
-    const count = 400;
+    const count = 1500; // 1,500 rose-gold dust particles
     
     const positions = useMemo(() => {
         const pos = new Float32Array(count * 3);
@@ -21,11 +21,16 @@ const Embers = () => {
     useFrame((state) => {
         if (!ref.current) return;
         const time = state.clock.getElapsedTime();
-        ref.current.rotation.y = time * 0.04;
-        ref.current.rotation.z = Math.sin(time * 0.2) * 0.05;
-        // Organic sin wave drift
-        ref.current.position.y = Math.sin(time * 0.3) * 0.5;
-        ref.current.position.x = Math.cos(time * 0.2) * 0.3;
+        const mx = mouse.x.get();
+        const my = mouse.y.get();
+
+        // Reacting to mouse movement and organic drift
+        ref.current.rotation.y = time * 0.02 + mx * 0.1;
+        ref.current.rotation.x = time * 0.01 - my * 0.1;
+        ref.current.rotation.z = Math.sin(time * 0.1) * 0.05;
+        
+        ref.current.position.y = Math.sin(time * 0.2) * 0.5;
+        ref.current.position.x = Math.cos(time * 0.15) * 0.3;
     });
 
     return (
@@ -33,38 +38,56 @@ const Embers = () => {
             <PointMaterial
                 transparent
                 color="#B76E79"
-                size={0.04}
+                size={0.06}
                 sizeAttenuation={true}
                 depthWrite={false}
                 blending={THREE.AdditiveBlending}
-                opacity={0.6}
+                opacity={0.7}
             />
         </Points>
     );
 };
 
-const FloatingGlassPages = () => {
+const FloatingGlassPages = ({ scroll }: { scroll: MotionValue<number> }) => {
     const groupRef = useRef<THREE.Group>(null);
     
+    // Curved path using Catmull-Rom spline to travel to Archive grid
+    const curve = useMemo(() => new THREE.CatmullRomCurve3([
+        new THREE.Vector3(5, 5, -15),    // Starting high up
+        new THREE.Vector3(0, 0, -10),    // Mid-scroll center
+        new THREE.Vector3(-6, -8, -5),   // Landing in Archive section
+    ]), []);
+
     useFrame((state) => {
         if (!groupRef.current) return;
-        const time = state.clock.getElapsedTime();
-        groupRef.current.position.y = Math.sin(time * 0.2) * 0.5;
-        groupRef.current.rotation.y = time * 0.05;
+        // scroll value from 0 to 1
+        const s = Math.min(Math.max(scroll.get(), 0), 1);
         
+        // Position along the spline
+        const point = curve.getPoint(s);
+        groupRef.current.position.lerp(point, 0.05);
+
+        // Physics-Based Rotation
+        const targetRotY = s * Math.PI * 2; // Full spin
+        const targetRotZ = Math.sin(s * Math.PI) * 0.5;
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.05);
+        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotZ, 0.05);
+        
+        // Flip pages dynamically based on scroll
         groupRef.current.children.forEach((child, i) => {
-            // Give them a subtle floating flutter
-            child.rotation.x = Math.sin(time * 0.5 + i) * 0.1;
-            child.rotation.z = Math.cos(time * 0.3 + i) * 0.05;
+            const targetChildRotY = s > 0.05 ? (i * Math.PI) / 6 + s * 2 : 0;
+            const targetChildRotX = Math.sin(state.clock.getElapsedTime() * 0.5 + i) * 0.05;
+            child.rotation.y = THREE.MathUtils.lerp(child.rotation.y, targetChildRotY, 0.05);
+            child.rotation.x = THREE.MathUtils.lerp(child.rotation.x, targetChildRotX, 0.05);
         });
     });
 
     return (
-        <group ref={groupRef} position={[0, 0, -12]} rotation={[0.2, -0.5, 0]}>
-            {/* Multiple glass pages peeling away */}
+        <group ref={groupRef}>
+            {/* Multiple glass pages flipping along the scroll path */}
             {[0, 1, 2, 3, 4].map((i) => (
-                <mesh key={i} position={[i * 0.5, i * 0.2, i * -1.5]} rotation={[-Math.PI/6 + (i*0.1), Math.PI/4 + (i*0.05), 0]}>
-                    <boxGeometry args={[6, 8, 0.05]} />
+                <mesh key={i} position={[i * 0.05, i * 0.02, i * -0.5]}>
+                    <boxGeometry args={[4, 5.5, 0.02]} />
                     <meshPhysicalMaterial 
                         color={i % 2 === 0 ? "#FBD7D1" : "#FAF9F6"}
                         transmission={0.9}
@@ -105,20 +128,23 @@ const SceneContent = ({ mouse, scroll }: {
 
     return (
         <>
-            <ambientLight intensity={0.2} />
+            <ambientLight intensity={0.3} />
             {/* Cinematic Lighting: High-intensity SpotLight with long penumbra */}
             <spotLight
                 ref={spotRef}
-                position={[10, 15, 10]}
-                angle={0.4}
-                penumbra={0.5}
-                intensity={200}
+                position={[15, 25, 10]}
+                angle={0.6}
+                penumbra={1}
+                intensity={400}
                 color="#FBD7D1"
+                castShadow
+                shadow-mapSize={[2048, 2048]}
+                shadow-bias={-0.0001}
             />
-            <pointLight position={[-10, -10, -10]} intensity={50} color="#74549A" />
+            <pointLight position={[-10, -10, -10]} intensity={80} color="#74549A" />
             
-            <Embers />
-            <FloatingGlassPages />
+            <Embers mouse={mouse} />
+            <FloatingGlassPages scroll={scroll} />
         </>
     );
 };

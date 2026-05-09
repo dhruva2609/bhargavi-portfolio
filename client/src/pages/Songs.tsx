@@ -1,7 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { motion, useScroll, useMotionValue } from 'framer-motion';
 import { Music, Play } from 'lucide-react';
 import Scene3D from '../components/Scene3D';
+import featherSvg from '../assets/Feather.svg';
 
 const Songs = () => {
     const songs = [
@@ -14,9 +15,25 @@ const Songs = () => {
         { title: "Amber Dreams", year: "2020", theme: "Wanderlust" },
     ];
 
+    const { scrollYProgress } = useScroll();
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            const { clientX, clientY } = e;
+            const x = (clientX / window.innerWidth) * 2 - 1;
+            const y = -(clientY / window.innerHeight) * 2 + 1;
+            mouseX.set(x);
+            mouseY.set(y);
+        };
+        window.addEventListener("mousemove", handleMouseMove);
+        return () => window.removeEventListener("mousemove", handleMouseMove);
+    }, [mouseX, mouseY]);
+
     return (
         <div className="min-h-screen w-full relative overflow-hidden bg-off-white pt-48 pb-32 px-6">
-            <Scene3D mouse={{ x: 0, y: 0 }} />
+            <Scene3D mouse={{ x: mouseX, y: mouseY }} scroll={scrollYProgress} />
             
             <div className="max-w-6xl mx-auto relative z-10">
                 <motion.header 
@@ -73,8 +90,11 @@ const Songs = () => {
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="mt-64 text-center"
+                    className="mt-64 text-center pb-12"
                 >
+                    <div className="flex justify-center mb-12">
+                        <img src={featherSvg} alt="Feather" className="w-12 md:w-16 opacity-30 transform -rotate-12" />
+                    </div>
                     <div className="w-24 h-[1px] bg-dream-purple/10 mx-auto mb-12" />
                     <p className="font-serif text-2xl text-dream-purple/30 italic max-w-lg mx-auto leading-relaxed">
                         "Lyrics are the poetry that found its rhythm in the silence of the night."
