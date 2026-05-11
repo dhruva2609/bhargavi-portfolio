@@ -15,7 +15,8 @@ const WavyBackground: React.FC = () => {
                 className="absolute top-0 left-0 w-[150vw] h-[60vh] bg-dream-pink/40"
                 style={{ 
                     borderRadius: "0 0 100% 100% / 0 0 50% 50%",
-                    filter: "blur(40px)"
+                    filter: "blur(25px)", // Reduced from 40px
+                    transform: "translateZ(0)"
                 }}
             />
 
@@ -30,7 +31,8 @@ const WavyBackground: React.FC = () => {
                 className="absolute top-1/4 right-0 w-[120vw] h-[50vh] bg-dream-purple/20"
                 style={{ 
                     borderRadius: "100% 100% 0 0 / 50% 50% 0 0",
-                    filter: "blur(50px)"
+                    filter: "blur(30px)", // Reduced from 50px
+                    transform: "translateZ(0)"
                 }}
             />
 
@@ -45,7 +47,8 @@ const WavyBackground: React.FC = () => {
                 className="absolute bottom-0 left-0 w-[180vw] h-[55vh] bg-cherry/5"
                 style={{ 
                     borderRadius: "50% 50% 0 0 / 100% 100% 0 0",
-                    filter: "blur(100px)"
+                    filter: "blur(40px)", // Reduced from 100px
+                    transform: "translateZ(0)"
                 }}
             />
 

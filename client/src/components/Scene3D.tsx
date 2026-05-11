@@ -6,7 +6,7 @@ import { MotionValue } from "framer-motion";
 
 const Embers = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<number> } }) => {
     const ref = useRef<THREE.Points>(null);
-    const count = 1500; // 1,500 rose-gold dust particles
+    const count = 1000; // Optimized from 1500
     
     const positions = useMemo(() => {
         const pos = new Float32Array(count * 3);
@@ -24,25 +24,25 @@ const Embers = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<num
         const mx = mouse.x.get();
         const my = mouse.y.get();
 
-        // Reacting to mouse movement and organic drift
-        ref.current.rotation.y = time * 0.02 + mx * 0.1;
-        ref.current.rotation.x = time * 0.01 - my * 0.1;
-        ref.current.rotation.z = Math.sin(time * 0.1) * 0.05;
+        ref.current.rotation.y = time * 0.02 + mx * 0.05;
+        ref.current.rotation.x = time * 0.01 - my * 0.05;
         
-        ref.current.position.y = Math.sin(time * 0.2) * 0.5;
-        ref.current.position.x = Math.cos(time * 0.15) * 0.3;
+        ref.current.position.y = Math.sin(time * 0.2) * 0.3;
     });
 
+    // Hardcoded for Editorial Pearl (Light Luxury)
+    const emberColor = '#B76E79';
+
     return (
-        <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
+        <Points ref={ref} positions={positions} stride={3} frustumCulled={true}>
             <PointMaterial
                 transparent
-                color="#B76E79"
-                size={0.06}
+                color={emberColor}
+                size={0.05}
                 sizeAttenuation={true}
                 depthWrite={false}
                 blending={THREE.AdditiveBlending}
-                opacity={0.7}
+                opacity={0.6}
             />
         </Points>
     );
@@ -51,52 +51,48 @@ const Embers = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<num
 const FloatingGlassPages = ({ scroll }: { scroll: MotionValue<number> }) => {
     const groupRef = useRef<THREE.Group>(null);
     
-    // Curved path using Catmull-Rom spline to travel to Archive grid
     const curve = useMemo(() => new THREE.CatmullRomCurve3([
-        new THREE.Vector3(5, 5, -15),    // Starting high up
-        new THREE.Vector3(0, 0, -10),    // Mid-scroll center
-        new THREE.Vector3(-6, -8, -5),   // Landing in Archive section
+        new THREE.Vector3(4, 4, -12),
+        new THREE.Vector3(0, 0, -8),
+        new THREE.Vector3(-4, -6, -4),
     ]), []);
 
     useFrame((state) => {
         if (!groupRef.current) return;
-        // scroll value from 0 to 1
         const s = Math.min(Math.max(scroll.get(), 0), 1);
         
-        // Position along the spline
         const point = curve.getPoint(s);
-        groupRef.current.position.lerp(point, 0.05);
+        groupRef.current.position.lerp(point, 0.1);
 
-        // Physics-Based Rotation
-        const targetRotY = s * Math.PI * 2; // Full spin
-        const targetRotZ = Math.sin(s * Math.PI) * 0.5;
-        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.05);
-        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotZ, 0.05);
+        const targetRotY = s * Math.PI * 2 + Math.sin(state.clock.getElapsedTime() * 0.2) * 0.1;
+        const targetRotZ = Math.sin(s * Math.PI) * 0.4 + Math.cos(state.clock.getElapsedTime() * 0.3) * 0.05;
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.1);
+        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotZ, 0.1);
+        groupRef.current.position.y += Math.sin(state.clock.getElapsedTime() * 0.5) * 0.002;
         
-        // Flip pages dynamically based on scroll
         groupRef.current.children.forEach((child, i) => {
             const targetChildRotY = s > 0.05 ? (i * Math.PI) / 6 + s * 2 : 0;
-            const targetChildRotX = Math.sin(state.clock.getElapsedTime() * 0.5 + i) * 0.05;
-            child.rotation.y = THREE.MathUtils.lerp(child.rotation.y, targetChildRotY, 0.05);
-            child.rotation.x = THREE.MathUtils.lerp(child.rotation.x, targetChildRotX, 0.05);
+            const targetChildRotX = Math.sin(state.clock.getElapsedTime() * 0.4 + i) * 0.04;
+            child.rotation.y = THREE.MathUtils.lerp(child.rotation.y, targetChildRotY, 0.1);
+            child.rotation.x = THREE.MathUtils.lerp(child.rotation.x, targetChildRotX, 0.1);
         });
     });
 
+
+    
     return (
         <group ref={groupRef}>
-            {/* Multiple glass pages flipping along the scroll path */}
             {[0, 1, 2, 3, 4].map((i) => (
-                <mesh key={i} position={[i * 0.05, i * 0.02, i * -0.5]}>
-                    <boxGeometry args={[4, 5.5, 0.02]} />
-                    <meshPhysicalMaterial 
-                        color={i % 2 === 0 ? "#FBD7D1" : "#FAF9F6"}
-                        transmission={0.9}
-                        opacity={1}
-                        metalness={0.1}
-                        roughness={0.05}
-                        ior={1.5}
-                        thickness={1}
-                        clearcoat={1}
+                <mesh key={i} position={[i * 0.04, i * 0.01, i * -0.4]}>
+                    <boxGeometry args={[3.8, 5.2, 0.01]} />
+                    <meshStandardMaterial 
+                        color={i % 2 === 0 ? "#F4D0D0" : "#FAF9F6"}
+                        transparent
+                        opacity={0.98}
+                        metalness={0.02}
+                        roughness={0.9}
+                        emissive={i % 2 === 0 ? "#F4D0D0" : "#FAF9F6"}
+                        emissiveIntensity={0.05}
                         side={THREE.DoubleSide}
                     />
                 </mesh>
@@ -116,32 +112,32 @@ const SceneContent = ({ mouse, scroll }: {
         const y = mouse.y.get();
         const s = scroll.get();
         
-        state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, x * 2, 0.05);
-        state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, y * 2 - (s * 5), 0.05);
+        state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, x * 1.5, 0.1);
+        state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, y * 1.5 - (s * 4), 0.1);
         state.camera.lookAt(0, 0, 0);
 
         if (spotRef.current) {
-            spotRef.current.position.x = x * 10;
-            spotRef.current.position.y = 10 + (y * 5);
+            spotRef.current.position.x = x * 8;
+            spotRef.current.position.y = 8 + (y * 4);
         }
     });
 
     return (
         <>
-            <ambientLight intensity={0.3} />
-            {/* Cinematic Lighting: High-intensity SpotLight with long penumbra */}
+            <ambientLight intensity={0.8} />
             <spotLight
                 ref={spotRef}
-                position={[15, 25, 10]}
-                angle={0.6}
+                position={[10, 20, 10]}
+                angle={0.5}
                 penumbra={1}
-                intensity={400}
+                intensity={800}
                 color="#FBD7D1"
                 castShadow
-                shadow-mapSize={[2048, 2048]}
-                shadow-bias={-0.0001}
+                shadow-mapSize={[512, 512]}
+                shadow-bias={-0.0005}
             />
-            <pointLight position={[-10, -10, -10]} intensity={80} color="#74549A" />
+            <pointLight position={[10, 10, 10]} intensity={1.5} color="#FBD7D1" />
+            <pointLight position={[-10, -10, -10]} intensity={0.5} color="#E6E6FA" />
             
             <Embers mouse={mouse} />
             <FloatingGlassPages scroll={scroll} />
@@ -155,7 +151,17 @@ const Scene3D = ({ mouse, scroll }: {
 }) => {
     return (
         <div className="fixed inset-0 z-0 pointer-events-none bg-transparent">
-            <Canvas shadows camera={{ position: [0, 0, 15], fov: 45 }}>
+            <Canvas 
+                shadows 
+                camera={{ position: [0, 0, 15], fov: 45 }}
+                gl={{ 
+                    powerPreference: "high-performance",
+                    antialias: true,
+                    stencil: false,
+                    depth: true
+                }}
+                dpr={[1, 1.5]} // Limit pixel ratio for high-res screens
+            >
                 <SceneContent mouse={mouse} scroll={scroll} />
             </Canvas>
         </div>

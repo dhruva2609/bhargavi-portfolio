@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const SAMPLE_DATA = {
     snippets: [
         {
@@ -59,12 +61,15 @@ const SAMPLE_DATA = {
 export const useNarrative = (endpoint: 'stories' | 'snippets') => {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/content/${endpoint}`);
-                // If the backend has data, use it; otherwise, use our premium sample data
+                setLoading(true);
+                setError(null);
+                const res = await axios.get(`${API_URL}/api/content/${endpoint}`);
+                
                 if (res.data && res.data.length > 0) {
                     setData(res.data);
                 } else {
@@ -72,6 +77,7 @@ export const useNarrative = (endpoint: 'stories' | 'snippets') => {
                 }
             } catch (err) {
                 console.error("Failed to fetch from the inkwell, using archive samples:", err);
+                setError("Archive connection weak. Displaying cached snapshots.");
                 setData(SAMPLE_DATA[endpoint]);
             } finally {
                 setLoading(false);
@@ -80,5 +86,5 @@ export const useNarrative = (endpoint: 'stories' | 'snippets') => {
         fetchData();
     }, [endpoint]);
 
-    return { data, loading };
+    return { data, loading, error };
 };

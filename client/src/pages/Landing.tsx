@@ -1,12 +1,93 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useSpring, useTransform, useMotionValue } from "framer-motion";
 import type { BezierDefinition } from "framer-motion";
 import SnippetCard from '../components/SnippetCard';
 import { useNarrative } from '../hooks/useNarrative';
 import bookSvg from '../assets/book.svg';
 import rosepenSvg from '../assets/rosepenhand.svg';
+import InstagramPost from '../components/InstagramPost';
+import { ArrowRight, Feather, Sparkles } from "lucide-react";
 
+const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
 
+// ── Typewriter component ──────────────────────────────────────────
+const Typewriter = ({ words }: { words: string[] }) => {
+    const [wordIdx, setWordIdx] = useState(0);
+    const [charIdx, setCharIdx] = useState(0);
+    const [deleting, setDeleting] = useState(false);
+    const [displayed, setDisplayed] = useState('');
+
+    useEffect(() => {
+        const current = words[wordIdx];
+        const delay = deleting ? 50 : charIdx === current.length ? 1800 : 90;
+
+        const t = setTimeout(() => {
+            if (!deleting && charIdx < current.length) {
+                setCharIdx(c => c + 1);
+                setDisplayed(current.slice(0, charIdx + 1));
+            } else if (!deleting && charIdx === current.length) {
+                setDeleting(true);
+            } else if (deleting && charIdx > 0) {
+                setCharIdx(c => c - 1);
+                setDisplayed(current.slice(0, charIdx - 1));
+            } else {
+                setDeleting(false);
+                setWordIdx(i => (i + 1) % words.length);
+            }
+        }, delay);
+
+        return () => clearTimeout(t);
+    }, [charIdx, deleting, wordIdx, words]);
+
+    return (
+        <span className="text-cherry font-light italic">
+            {displayed}
+            <span className="typewriter-cursor" />
+        </span>
+    );
+};
+
+// ── Marquee strip ─────────────────────────────────────────────────
+const marqueeItems = [
+    "narrative", "◆", "silence", "◆", "architecture", "◆", "ink",
+    "◆", "fragments", "◆", "poetry", "◆", "sanctuary", "◆", "echoes",
+];
+
+const Marquee = () => (
+    <div className="overflow-hidden border-y border-dream-purple/5 py-3 md:py-4 relative select-none">
+        <motion.div
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 20, ease: "linear", repeat: Infinity }}
+            className="flex gap-8 md:gap-12 whitespace-nowrap"
+        >
+            {[...marqueeItems, ...marqueeItems].map((item, i) => (
+                <span
+                    key={i}
+                    className={`metadata-precise text-[8px] md:text-[9px] ${item === "◆" ? "text-cherry/40" : "text-dream-purple/25 hover:text-dream-purple/60 transition-colors"
+                        }`}
+                >
+                    {item}
+                </span>
+            ))}
+        </motion.div>
+    </div>
+);
+
+// ── Stat counter ──────────────────────────────────────────────────
+const StatCard = ({ value, label, delay = 0 }: { value: string; label: string; delay?: number }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, ease: editorialEase, delay }}
+        className="text-center space-y-1"
+    >
+        <p className="font-serif italic text-dream-purple text-3xl md:text-5xl tracking-tighter">{value}</p>
+        <p className="metadata-precise text-[7px] md:text-[8px] text-muted-rosegold/60">{label}</p>
+    </motion.div>
+);
+
+// ─────────────────────────────────────────────────────────────────
 const Landing = () => {
     const { data: posts, loading } = useNarrative('snippets');
     const { scrollYProgress } = useScroll();
@@ -17,248 +98,394 @@ const Landing = () => {
     const smoothMouseX = useSpring(mouseX, { stiffness: 40, damping: 20 });
     const smoothMouseY = useSpring(mouseY, { stiffness: 40, damping: 20 });
 
+    const heroRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress: heroProgress } = useScroll({
+        target: heroRef,
+        offset: ["start start", "end start"],
+    });
+    const heroY = useTransform(heroProgress, [0, 1], ["0%", "30%"]);
+    const heroOpa = useTransform(heroProgress, [0, 0.6], [1, 0]);
+
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
+        const handle = (e: MouseEvent) => {
             mouseX.set((e.clientX / window.innerWidth) * 2 - 1);
             mouseY.set((e.clientY / window.innerHeight) * 2 - 1);
         };
-        window.addEventListener("mousemove", handleMouseMove);
-        return () => window.removeEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mousemove", handle, { passive: true });
+        return () => window.removeEventListener("mousemove", handle);
     }, [mouseX, mouseY]);
 
-    const parallaxX = useTransform(smoothMouseX, [-1, 1], [-20, 20]);
-    const parallaxY = useTransform(smoothMouseY, [-1, 1], [-20, 20]);
+    const parallaxX = useTransform(smoothMouseX, [-1, 1], [-18, 18]);
+    const parallaxY = useTransform(smoothMouseY, [-1, 1], [-18, 18]);
 
     const instagramPosts = [
-        { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "First Bloom", image: "/assets/images/arch.png" },
-        { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Soul Echoes", image: "/assets/images/flower.png" },
-        { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Secret Verse", image: "/assets/images/desk.png" },
-        { url: "https://www.instagram.com/p/DX-sfYmistG/", label: "Final Chapter", image: "/assets/images/abstract.png" }
+        { url: "https://www.instagram.com/p/DFk4I9YvS9W/", label: "Symmetrical Silence", image: "/assets/images/arch.png" },
+        { url: "https://www.instagram.com/p/DG3E1YmsJ_V/", label: "The Alchemist's Study", image: "/assets/images/desk.png" },
+        { url: "https://www.instagram.com/p/C66Z_vlsJ-8/", label: "Petal & Paper", image: "/assets/images/flower.png" },
+        { url: "https://www.instagram.com/p/C8y4zImsL92/", label: "Architectural Verse", image: "/assets/images/abstract.png" },
     ];
 
-    const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
-
-    // Cinematic Signature dissolve mapped to scroll
-    const signatureOpacity = useTransform(scrollYProgress, [0, 0.15], [0.08, 0]);
-
     return (
-        <div
-            className="relative min-h-[300vh] selection:bg-dream-pink/20 overflow-hidden"
-        >
-            {/* Cinematic Signature */}
-            <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0">
-                <motion.h1
-                    style={{ opacity: signatureOpacity }}
-                    className="text-[clamp(4rem,12vw,15rem)] font-serif italic tracking-tighter text-dream-purple uppercase whitespace-nowrap will-change-[opacity]"
+        <div className="relative selection:bg-dream-pink/20 overflow-x-hidden">
+
+            {/* ───────────────────────────────────────────────────────
+                HERO — Parallax cinematic entrance
+            ─────────────────────────────────────────────────────── */}
+            <section
+                ref={heroRef}
+                className="relative min-h-[100svh] flex flex-col items-center justify-center overflow-hidden"
+            >
+                {/* Morphing background gradient */}
+                <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ y: heroY, opacity: heroOpa }}
                 >
-                    Bhargavi
-                </motion.h1>
-            </div>
+                    <div className="absolute inset-0 bg-gradient-radial from-dream-pink/20 via-transparent to-transparent"
+                        style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(251,215,209,0.25) 0%, transparent 70%)' }}
+                    />
+                    <div className="absolute -top-32 -right-32 w-[500px] h-[500px] morph-blob bg-gradient-to-br from-dream-purple/8 to-cherry/5 blur-3xl" />
+                    <div className="absolute -bottom-16 -left-16 w-[400px] h-[400px] morph-blob bg-gradient-to-tr from-dream-pink/12 to-lavender/8 blur-3xl" style={{ animationDelay: '3s' }} />
+                </motion.div>
 
-            {/* Content Layers */}
-            <div className="relative z-10">
-
-                {/* Section 1: Hero / Architectural Intro */}
-                <section className="min-h-[85vh] flex flex-col md:flex-row items-center justify-center px-6 md:px-24 gap-12 pt-32 md:pt-0 relative">
-
-                    {/* Vintage Typewriter Animation (Moved to Section 2) */}
-
+                <motion.div
+                    style={{ y: heroY }}
+                    className="relative z-10 editorial-section w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 pt-28 md:pt-20"
+                >
+                    {/* Left: headline */}
                     <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 1.5, ease: editorialEase }}
+                        initial={{ opacity: 0, x: -40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 1.6, ease: editorialEase }}
                         style={{ x: parallaxX, y: parallaxY }}
-                        className="max-w-4xl text-center md:text-left flex-1"
+                        className="flex-1 text-center lg:text-left max-w-2xl"
                     >
-                        <span className="metadata-precise text-muted-rosegold mb-8 block">
-                            Editorial Archive 2026
-                        </span>
-                        <h2 className="text-[clamp(2.5rem,5vw,5rem)] text-charcoal mb-12 leading-none">
-                            Architect of <br /> <i className="text-dream-purple font-light">Unspoken</i> Scenes
+                        <motion.span
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, delay: 0.2, ease: editorialEase }}
+                            className="metadata-precise text-muted-rosegold mb-6 md:mb-8 block"
+                        >
+                            Editorial Archive · 2026
+                        </motion.span>
+
+                        <h2 className="text-charcoal mb-6 md:mb-10 leading-none hero-enter">
+                            Architect of{" "}
+                            <br className="hidden md:block" />
+                            <Typewriter words={["Unspoken Scenes", "Quiet Luxury", "Ink & Silence", "Narrative Worlds"]} />
                         </h2>
-                        <p className="font-serif italic text-dream-purple/40 text-lg md:text-2xl max-w-md mb-12">
+
+                        <motion.p
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1.2, delay: 0.6, ease: editorialEase }}
+                            className="font-serif italic text-dream-purple/40 text-lg md:text-2xl max-w-md mx-auto lg:mx-0 mb-10 md:mb-14 leading-relaxed"
+                        >
                             Curating the intersections of narrative, space, and silence.
-                        </p>
-                        <div className="flex justify-center md:justify-start">
-                            <a href="mailto:bhargavi@example.com" className="editorial-card px-8 py-3 bg-dream-purple text-white hover:bg-cherry transition-all duration-500 metadata-precise uppercase tracking-widest text-xs shadow-editorial">
-                                Collaborate
+                        </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1.2, delay: 0.9, ease: editorialEase }}
+                            className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
+                        >
+                            <a href="/muse" className="btn-editorial">
+                                <span>Enter the Archive</span> <ArrowRight size={12} />
                             </a>
-                        </div>
+                            {/* <a
+                                href="mailto:pandyadhruva09@gmail.com"
+                                className="metadata-precise text-[9px] text-dream-purple/35 hover:text-cherry transition-colors duration-300 flex items-center gap-2"
+                            >
+                                <Feather size={12} /> Collaborate
+                            </a> */}
+                        </motion.div>
                     </motion.div>
-                    {/* Right side - The Rose Pen */}
+
+                    {/* Right: Rose Pen */}
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 2, delay: 0.5 }}
-                        className="flex-1 flex justify-center mt-12 md:mt-0 z-10"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 2, delay: 0.4, ease: editorialEase }}
+                        style={{ x: parallaxX, y: parallaxY }}
+                        className="flex-1 flex justify-center z-10 max-w-xs md:max-w-md lg:max-w-xl w-full"
                     >
                         <motion.img
                             src={rosepenSvg}
                             alt="Vintage Rose Pen"
-                            style={{ x: parallaxX, y: parallaxY }}
-                            className="w-full max-w-[280px] md:max-w-[500px] mx-auto z-10 drop-shadow-2xl hover:scale-105 transition-transform duration-700 ease-out"
+                            className="w-full float-anim-slow drop-shadow-2xl"
+                            style={{ filter: 'drop-shadow(0 40px 60px rgba(104,76,143,0.15))' }}
                         />
                     </motion.div>
-                </section>
+                </motion.div>
 
-                {/* Section 2: Split-Screen Archive (The Echoes) */}
-                <section className="h-screen grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5 relative overflow-hidden">
-
-                    {/* Left: Static Massive Title */}
-                    <div className="lg:col-span-5 h-full flex flex-col justify-start p-8 md:p-24 pt-16 md:pt-24 border-r border-dream-purple/5 bg-off-white z-10 relative">
-                        <div className="relative z-20">
-                            <span className="metadata-precise text-muted-rosegold mb-4 block">01 / Echoes</span>
-                            <h2 className="text-[clamp(4rem,10vw,10rem)] text-dream-purple italic mb-4 font-serif tracking-tighter leading-none">Echoes</h2>
-                            <p className="text-charcoal/60 text-lg md:text-xl leading-relaxed max-w-sm font-serif italic mb-8">
-                                A curated feed of architectural fragments and literary snapshots.
-                            </p>
-                        </div>
-
-                        {/* The Vintage Book SVG */}
-                        <motion.div
-                            style={{ y: parallaxY, x: parallaxX }}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: false, amount: 0.1 }}
-                            transition={{ duration: 1.5, ease: editorialEase }}
-                            className="absolute bottom- lg:-bottom-4 right-0 lg:right-32 w-full max-w-[200px] md:max-w-[350px] z-10 hover:scale-105 transition-transform duration-700 ease-out hidden lg:block opacity-90"
-                        >
-                            <img
-                                src={bookSvg}
-                                alt="Vintage Book"
-                                className="w-full h-auto drop-shadow-2xl"
-                            />
-                        </motion.div>
-                    </div>
-
-                    {/* Right: Scrollable Feed */}
-                    <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar p-6 md:p-24 bg-transparent">
-                        <motion.div
-                            variants={{
-                                visible: { transition: { staggerChildren: 0.15 } }
-                            }}
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: false, amount: 0.1 }}
-                            className="flex flex-col gap-12 md:gap-24 max-w-xl mx-auto pb-48"
-                        >
-                            {loading ? (
-                                <div className="h-screen flex items-center justify-center">
-                                    <p className="text-muted-rosegold animate-pulse tracking-widest uppercase text-xs">Curating fragments...</p>
-                                </div>
-                            ) : (
-                                posts.map((post: any, idx: number) => (
-                                    <SnippetCard
-                                        key={post._id || idx}
-                                        content={post.content || post.body}
-                                        date={post.date || new Date(post.createdAt).toLocaleDateString()}
-                                    />
-                                ))
-                            )}
-                        </motion.div>
-                    </div>
-                </section>
-
-                {/* Section 3: Visual Grammar */}
-                <section className="py-8 md:py-16 border-t border-dream-purple/5 relative overflow-hidden">
-
-                    <div className="mb-4 md:mb-8 text-center md:text-left px-6 md:px-24">
-                        <span className="metadata-precise text-muted-rosegold mb-4 block">02 / Scenes</span>
-                        <h2 className="text-[clamp(3rem,6vw,6rem)] text-charcoal">Visual <i className="text-cherry font-light">Grammar</i></h2>
-                    </div>
-
+                {/* Scroll cue */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 2, duration: 1 }}
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+                >
+                    <span className="metadata-precise text-[7px] text-dream-purple/25">scroll</span>
                     <motion.div
-                        variants={{
-                            visible: { transition: { staggerChildren: 0.1, ease: editorialEase } }
-                        }}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: false, amount: 0.1 }}
-                        className="flex overflow-x-auto gap-6 md:gap-12 px-6 md:px-24 pb-16 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full"
-                    >
-                        {instagramPosts.map((post, i) => (
-                            <motion.a
-                                key={i}
-                                href={post.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                variants={{
-                                    hidden: { opacity: 0, scale: 0.95 },
-                                    visible: {
-                                        opacity: 1,
-                                        scale: 1,
-                                        transition: { duration: 1.2, ease: editorialEase }
-                                    }
-                                }}
-                                className="editorial-card group relative aspect-[4/5] overflow-hidden flex-none w-[80vw] sm:w-[50vw] md:w-[400px] snap-center cursor-grab active:cursor-grabbing"
-                            >
-                                <img
-                                    src={post.image}
-                                    alt={post.label}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2000ms] ease-out pointer-events-none"
-                                />
-                                <div className="absolute inset-0 bg-dream-purple/[0.05] group-hover:bg-dream-purple/0 transition-colors duration-700 pointer-events-none" />
-                                <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-dream-purple/40 to-transparent pointer-events-none">
-                                    <span className="text-white metadata-precise mb-4">Instagram</span>
-                                    <h3 className="text-white text-4xl italic">{post.label}</h3>
-                                </div>
-                                <div className="absolute top-8 right-8 w-12 h-12 border border-white/20 rounded-full flex items-center justify-center text-white group-hover:bg-cherry group-hover:border-cherry transition-all duration-500 pointer-events-none">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-                                </div>
-                            </motion.a>
-                        ))}
-                    </motion.div>
-                </section>
+                        animate={{ y: [0, 8, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-[1px] h-8 bg-gradient-to-b from-dream-purple/30 to-transparent"
+                    />
+                </motion.div>
+            </section>
 
-                {/* Section 4: The Sanctuary */}
-                <section className="flex flex-col items-center justify-center py-16 md:py-32 px-6 bg-dream-purple text-off-white overflow-hidden relative">
+            {/* ── Marquee separator ── */}
+            <Marquee />
+
+            {/* ── Stats bar ── */}
+            <section className="py-12 md:py-16 px-6">
+                <div className="max-w-3xl mx-auto grid grid-cols-3 gap-6 md:gap-12">
+                    <StatCard value="∞" label="Fragments Written" delay={0} />
+                    <StatCard value="2026" label="Archive Established" delay={0.12} />
+                    <StatCard value="∅" label="Words Left Unspoken" delay={0.24} />
+                </div>
+            </section>
+
+            <div className="section-divider mx-6 md:mx-24" />
+
+            {/* ───────────────────────────────────────────────────────
+                SECTION 2 — Echoes: Split-screen archive feed
+            ─────────────────────────────────────────────────────── */}
+            <section className="min-h-screen grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5 relative overflow-hidden">
+
+                {/* Left sticky panel */}
+                <div className="lg:col-span-5 flex flex-col justify-start p-8 md:p-24 border-b lg:border-b-0 lg:border-r border-dream-purple/5 bg-transparent relative overflow-hidden">
+                    {/* Ambient blob */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-dream-pink/10 rounded-full blur-3xl pointer-events-none" />
+
+                    <div className="relative z-10">
+                        <motion.span
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8 }}
+                            className="metadata-precise text-muted-rosegold mb-4 block"
+                        >
+                            01 / Echoes
+                        </motion.span>
+                        <motion.h2
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: 0.1, ease: editorialEase }}
+                            className="text-dream-purple italic mb-6 font-serif tracking-tighter leading-none"
+                        >
+                            Echoes
+                        </motion.h2>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: 0.2 }}
+                            className="text-charcoal/50 text-base md:text-xl leading-relaxed max-w-sm font-serif italic mb-8 md:mb-12"
+                        >
+                            A curated feed of architectural fragments and literary snapshots.
+                        </motion.p>
+                    </div>
+
+                    {/* Book SVG */}
                     <motion.div
+                        style={{ y: parallaxY, x: parallaxX }}
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true, amount: 0.1 }}
                         transition={{ duration: 1.5, ease: editorialEase }}
-                        className="relative z-10 text-center"
+                        className="hidden lg:block absolute bottom-20 left-36 w-[200px] md:w-[300px] float-anim opacity-80"
                     >
-                        <span className="metadata-precise text-dream-pink mb-12 block">The Final Note</span>
-                        <h2 className="text-[clamp(3rem,8vw,8rem)] mb-12 leading-none italic font-light tracking-tighter">Sanctuary</h2>
+                        <img
+                            src={bookSvg}
+                            alt="Vintage Book"
+                            className="w-full h-auto drop-shadow-2xl"
+                            style={{ filter: 'drop-shadow(0 30px 40px rgba(104,76,143,0.12))' }}
+                        />
+                    </motion.div>
+                </div>
 
-                        <p className="font-serif text-dream-pink/60 text-lg md:text-2xl mb-16 max-w-lg mx-auto leading-relaxed italic">
-                            Where every fragment finds its place in the grand narrative of the self.
-                        </p>
+                {/* Right: scrollable feed */}
+                <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar p-6 md:p-16 bg-transparent">
+                    <motion.div
+                        variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.05 }}
+                        className="flex flex-col gap-8 md:gap-16 max-w-xl mx-auto pb-32"
+                    >
+                        {loading ? (
+                            <div className="flex flex-col gap-8 pt-16">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="shimmer h-40 w-full" />
+                                ))}
+                            </div>
+                        ) : (
+                            posts.map((post: any, idx: number) => (
+                                <SnippetCard
+                                    key={post._id || idx}
+                                    content={post.content || post.body}
+                                    date={post.date || new Date(post.createdAt).toLocaleDateString()}
+                                />
+                            ))
+                        )}
+                    </motion.div>
+                </div>
+            </section>
 
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                            <button className="group relative px-12 py-6 border border-dream-pink/20 hover:border-dream-pink transition-colors duration-500 overflow-hidden interactive">
-                                <span className="relative z-10 metadata-precise text-dream-pink">Enter the Dream</span>
-                                <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 ease-editorial" />
-                                <span className="absolute inset-0 flex items-center justify-center metadata-precise text-dream-purple opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-20">Enter the Dream</span>
-                            </button>
-                            <a href="mailto:hello@example.com" className="group relative px-12 py-6 border border-transparent hover:border-dream-pink/20 transition-colors duration-500 overflow-hidden interactive">
-                                <span className="relative z-10 metadata-precise text-dream-pink">Collaborate</span>
-                                <div className="absolute inset-0 bg-dream-pink/10 scale-x-0 group-hover:scale-x-100 origin-right transition-transform duration-700 ease-editorial" />
-                            </a>
-                        </div>
+            <div className="section-divider mx-6 md:mx-24" />
+
+            {/* ───────────────────────────────────────────────────────
+                SECTION 3 — Visual Grammar (Swipeable Instagram carousel)
+            ─────────────────────────────────────────────────────── */}
+            <section className="editorial-section border-t border-dream-purple/5 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none"
+                    style={{ background: 'radial-gradient(ellipse 100% 60% at 50% 100%, rgba(251,215,209,0.12) 0%, transparent 70%)' }}
+                />
+
+                <div className="mb-10 md:mb-16 text-center lg:text-left relative z-10">
+                    <motion.span
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="metadata-precise text-muted-rosegold mb-4 block"
+                    >
+                        02 / Scenes
+                    </motion.span>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, ease: editorialEase }}
+                        className="text-charcoal"
+                    >
+                        Visual <i className="text-cherry font-light">Grammar</i>
+                    </motion.h2>
+                </div>
+
+                <motion.div
+                    variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    className="flex overflow-x-auto gap-6 md:gap-10 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full relative z-10"
+                >
+                    {instagramPosts.map((post, i) => (
+                        <InstagramPost
+                            key={i}
+                            url={post.url}
+                            label={post.label}
+                            placeholderImage={post.image}
+                        />
+                    ))}
+                </motion.div>
+            </section>
+
+            <div className="section-divider mx-6 md:mx-24" />
+
+            {/* ───────────────────────────────────────────────────────
+                SECTION 4 — Sanctuary (full-bleed CTA)
+            ─────────────────────────────────────────────────────── */}
+            <section className="relative min-h-[80svh] flex flex-col items-center justify-center overflow-hidden bg-dream-purple text-off-white px-6 py-24 md:py-40">
+                {/* Background wave SVG */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <motion.path
+                            d="M0,50 Q25,0 50,50 T100,50"
+                            fill="none"
+                            stroke="var(--color-dream-pink)"
+                            strokeWidth="0.08"
+                            initial={{ pathLength: 0 }}
+                            whileInView={{ pathLength: 1 }}
+                            transition={{ duration: 3, ease: editorialEase }}
+                        />
+                        <motion.path
+                            d="M0,60 Q25,10 50,60 T100,60"
+                            fill="none"
+                            stroke="var(--color-dream-pink)"
+                            strokeWidth="0.04"
+                            initial={{ pathLength: 0 }}
+                            whileInView={{ pathLength: 1 }}
+                            transition={{ duration: 3.5, delay: 0.5, ease: editorialEase }}
+                        />
+                    </svg>
+                </div>
+
+                {/* Blobs */}
+                <div className="absolute top-0 right-0 w-[400px] h-[400px] morph-blob bg-cherry/10 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] morph-blob bg-dream-pink/10 blur-3xl pointer-events-none" style={{ animationDelay: '5s' }} />
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 1.5, ease: editorialEase }}
+                    className="relative z-10 text-center max-w-3xl mx-auto"
+                >
+                    <span className="metadata-precise text-dream-pink/60 mb-8 md:mb-12 block">The Final Note</span>
+
+                    <h2 className="text-[clamp(3rem,10vw,8rem)] mb-8 md:mb-12 leading-none italic font-light tracking-tighter text-dream-pink">
+                        Sanctuary
+                    </h2>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, delay: 0.3 }}
+                        className="font-serif text-white/50 text-base md:text-2xl mb-12 md:mb-20 max-w-xl mx-auto leading-relaxed italic"
+                    >
+                        Where every fragment finds its place in the grand narrative of the self.
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6"
+                    >
+                        <a
+                            href="/muse"
+                            className="group relative inline-flex items-center gap-3 px-8 md:px-14 py-4 md:py-5 border-2 border-dream-pink/20 hover:border-dream-pink rounded-full transition-all duration-700 overflow-hidden"
+                        >
+                            <span className="relative z-10 metadata-precise text-[9px] md:text-[10px] text-dream-pink/80 group-hover:text-dream-purple transition-colors duration-500">
+                                Enter the Dream
+                            </span>
+                            <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 rounded-full" />
+                        </a>
+
+                        <a
+                            href="mailto:pandyadhruva09@gmail.com"
+                            className="group relative inline-flex items-center gap-3 px-8 md:px-14 py-4 md:py-5 border-2 border-dream-pink/10 hover:border-dream-pink/40 rounded-full transition-all duration-700 overflow-hidden"
+                        >
+                            <span className="relative z-10 metadata-precise text-[9px] md:text-[10px] text-dream-pink/50 group-hover:text-dream-purple transition-colors">
+                                Collaborate
+                            </span>
+                            <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-right transition-transform duration-700 rounded-full" />
+                        </a>
                     </motion.div>
 
-                    {/* Abstract SVG Background element */}
-                    <div className="absolute inset-0 opacity-20 pointer-events-none">
-                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <motion.path
-                                d="M0,50 Q25,0 50,50 T100,50"
-                                fill="none"
-                                stroke="var(--color-dream-pink)"
-                                strokeWidth="0.1"
-                                initial={{ pathLength: 0 }}
-                                whileInView={{ pathLength: 1 }}
-                                transition={{ duration: 3, ease: editorialEase }}
-                            />
-                        </svg>
+                    {/* Decorative sparkles */}
+                    <div className="flex justify-center gap-8 mt-12 md:mt-20 opacity-20">
+                        {[0, 1, 2].map(i => (
+                            <motion.div
+                                key={i}
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 8 + i * 2, repeat: Infinity, ease: "linear" }}
+                            >
+                                <Sparkles size={16} className="text-dream-pink" />
+                            </motion.div>
+                        ))}
                     </div>
-                </section>
-            </div>
+                </motion.div>
+            </section>
 
-            {/* Scroll Progress Indicator */}
+            {/* ── Scroll progress ── */}
             <motion.div
                 style={{ scaleX: smoothScroll }}
-                className="fixed bottom-0 left-0 right-0 h-[2px] bg-cherry origin-left z-50"
+                className="fixed bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-dream-purple via-cherry to-muted-rosegold origin-left z-50"
             />
         </div>
     );

@@ -1,0 +1,13 @@
+{
+  "name": "bhargavi-portfolio-production",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Editorial Pearl - Full Stack Deployment Wrapper",
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "build-client": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "production": "npm run build-client && npm start",
+    "healthcheck": "node scripts/healthcheck.js"
+  }
+}

@@ -15,24 +15,52 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// --- SECURITY IMPLEMENTATION ---
+// --- PRODUCTION HARDENING ---
+
+// Trust first proxy (Render/Vercel)
+app.set('trust proxy', 1);
 
 // 1. Helmet for secure HTTP headers
 app.use(helmet({
-  crossOriginResourcePolicy: false, // Allow cross-origin images
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https://*", "blob:"],
+      connectSrc: ["'self'", "https://*", "http://localhost:*"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'self'"],
+    },
+  },
 }));
 
-// 2. Strict CORS
+// 2. Strict Production CORS
+const allowedOrigins = [
+  process.env.PRODUCTION_URL, 
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS access denied. The sanctuary is closed to this origin.'));
+    }
+  },
   credentials: true
 }));
 
-// 3. Rate Limiting to prevent brute force/abuse
+// 3. Narrative Rate Limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: "Too many requests from this inkwell, please try again later."
+  windowMs: 15 * 60 * 1000, 
+  max: 100,
+  message: { error: "Too many requests from this inkwell. Please wait for the ink to dry." }
 });
 app.use('/api/', limiter);
 
@@ -48,9 +76,19 @@ mongoose.connect(MONGO_URI)
 // Routes
 app.use('/api/content', contentRouter);
 
-app.get('/', (req, res) => {
-  res.send('The Writer\'s Sanctuary Backend is secure and online.');
-});
+// Serve Static Frontend in Production
+if (process.env.NODE_ENV === 'production') {
+  const clientDistPath = path.join(__dirname, '../client/dist');
+  app.use(express.static(clientDistPath));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('The Writer\'s Sanctuary Backend is secure and online.');
+  });
+}
 
 // --- CENTRALIZED ERROR HANDLING ---
 
