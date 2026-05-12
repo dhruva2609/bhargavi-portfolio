@@ -1,26 +1,15 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Sparkles, Music, Send, Mail } from 'lucide-react';
+import { Home, BookOpen, PenTool, Sparkles, Music } from 'lucide-react';
+import { InstagramIcon } from './InstagramPost';
 import { useMotionValue, useSpring, useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import Scene3D from './Scene3D';
 import FloatingGarden from './FloatingGarden';
 import Stardust from './Stardust';
 
-const InstagramIcon = ({ size = 20 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-    </svg>
-);
-
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
 
-    const [email, setEmail] = React.useState('');
-    const [submitting, setSubmitting] = React.useState(false);
-    const [subscribed, setSubscribed] = React.useState(false);
-    const [cursorPos, setCursorPos] = React.useState({ x: -500, y: -500 });
     const [isMobile, setIsMobile] = React.useState(false);
 
     // Detect mobile
@@ -30,45 +19,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         window.addEventListener('resize', check);
         return () => window.removeEventListener('resize', check);
     }, []);
-
-    // Cursor glow tracking
-    React.useEffect(() => {
-        if (isMobile) return;
-        const onMove = (e: MouseEvent) => setCursorPos({ x: e.clientX, y: e.clientY });
-        window.addEventListener('mousemove', onMove, { passive: true });
-        return () => window.removeEventListener('mousemove', onMove);
-    }, [isMobile]);
-
-    const handleSubscribe = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) return;
-        setSubmitting(true);
-        try {
-            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-            const res = await fetch(`${API_URL}/api/content/subscribe`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-            if (res.ok) setSubscribed(true);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const newsletterConfig: Record<string, { title: string; desc: string }> = {
-        '/snippets': { title: "Join the Archive", desc: "Receive archival notes and literary fragments whenever the vault is updated." },
-        '/muse': { title: "The Muse's Library", desc: "Get a digital wax-sealed notification whenever a new volume is added to the bookshelf." },
-        '/melodies': { title: "Lyricist's Circle", desc: "Original songs and written melodies delivered to your digital sanctuary." },
-        '/creator': { title: "Creator Insights", desc: "Behind-the-scenes thoughts on the narrative craft and worldbuilding." },
-    };
-
-    const currentConfig = newsletterConfig[location.pathname] || {
-        title: "Subscribe to the Archive",
-        desc: "Receive updates from Bhargavi's digital sanctuary.",
-    };
 
     // Lenis smooth scroll
     React.useEffect(() => {
@@ -123,12 +73,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             className="min-h-screen bg-transparent relative overflow-x-hidden selection:bg-dream-pink/20"
         >
             {/* ── Magnetic cursor glow (desktop only) ── */}
-            {!isMobile && (
-                <div
-                    className="cursor-glow"
-                    style={{ left: cursorPos.x, top: cursorPos.y }}
-                />
-            )}
+            {!isMobile && <CursorGlow />}
 
             {/* ── Ambient orbs ── */}
             <div
@@ -149,7 +94,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }}
             />
 
-            <FloatingGarden />
+            <FloatingGarden mouse={{ x: mouseX, y: mouseY }} />
             <Stardust />
             <Scene3D mouse={{ x: springX, y: springY }} scroll={scrollYProgress} />
 
@@ -208,78 +153,50 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {/* ── Main Content ── */}
             <main>{children}</main>
 
-            {/* ── Footer ── */}
-            <footer className="relative z-10 pt-8 pb-4 border-t border-dream-purple/5 bg-gradient-to-b from-transparent to-off-white/80 backdrop-blur-sm overflow-hidden">
-                <div className="max-w-4xl mx-auto px-6 py-8 md:py-12 text-center space-y-6 md:space-y-8">
-                    {/* Subscribe form — only on relevant pages */}
-                    {['/snippets', '/muse', '/songs'].includes(location.pathname) && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 24 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.9 }}
-                            className="space-y-4 max-w-2xl mx-auto"
-                        >
-                            <span className="metadata-precise text-[9px] md:text-[10px] tracking-[0.5em] text-muted-rosegold block">
-                                The Midnight Bulletin
-                            </span>
-                            <h2 className="font-serif text-2xl md:text-3xl italic text-charcoal">
-                                {currentConfig.title}
-                            </h2>
-                            <p className="text-charcoal/50 font-serif italic text-sm md:text-base leading-relaxed">
-                                {currentConfig.desc}
-                            </p>
-
-                            <form
-                                onSubmit={handleSubscribe}
-                                className="flex flex-col sm:flex-row items-stretch gap-3 md:gap-4 max-w-lg mx-auto"
-                            >
-                                <div className="relative flex-1 group">
-                                    <Mail
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-charcoal/25 group-focus-within:text-cherry transition-colors"
-                                        size={16}
-                                    />
-                                    <input
-                                        type="email"
-                                        required
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder={subscribed ? "Subscription confirmed ✓" : "Your email…"}
-                                        disabled={submitting || subscribed}
-                                        className="w-full bg-white/50 backdrop-blur border border-dream-purple/10 pl-10 pr-4 py-3 md:py-4 rounded-full outline-none focus:border-cherry/30 transition-all font-serif italic text-base md:text-lg shadow-sm disabled:opacity-50 text-charcoal placeholder:text-charcoal/25"
-                                    />
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={submitting || subscribed}
-                                    className="btn-editorial whitespace-nowrap disabled:opacity-40 py-3 md:py-4 px-6 md:px-8"
-                                >
-                                    <span>{subscribed ? "Joined" : submitting ? "…" : "Join"}</span> <Send size={12} />
-                                </button>
-                            </form>
-                        </motion.div>
-                    )}
-
-                    {/* Bottom bar */}
-                    <div className="flex flex-col items-center gap-4 pt-0 md:pt-0">
-                        <div className="flex items-center gap-4 text-dream-purple/30">
-                            <a
-                                href="https://instagram.com/scenarios.to.scenes"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="hover:text-cherry transition-colors duration-300 hover:scale-110 inline-flex"
-                                aria-label="Instagram"
-                            >
-                                <InstagramIcon size={18} />
-                            </a>
-                        </div>
-                        <p className="font-serif text-charcoal/20 italic text-sm tracking-widest">
-                            © 2026 Bhargavi — All rights reserved.
-                        </p>
-                    </div>
-                </div>
+            {/* ── Minimal Footer ── */}
+            <footer className="relative z-10 h-[50px] border-t border-dream-purple/5 bg-off-white/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
+                <p className="metadata-precise text-[8px] tracking-[0.3em] text-charcoal/30 uppercase flex items-center gap-4">
+                    © 2026 Bhargavi — Editorial Archive
+                    <span className="w-4 h-[1px] bg-charcoal/10" />
+                    <a 
+                        href="https://instagram.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="hover:text-cherry transition-colors duration-500 flex items-center gap-1.5 group"
+                    >
+                        <InstagramIcon size={10} className="group-hover:scale-110 transition-transform" />
+                        <span className="tracking-[0.4em]">Follow</span>
+                    </a>
+                </p>
             </footer>
         </div>
+    );
+};
+const CursorGlow = () => {
+    const mouseX = useMotionValue(-100);
+    const mouseY = useMotionValue(-100);
+
+    React.useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            mouseX.set(e.clientX);
+            mouseY.set(e.clientY);
+        };
+        window.addEventListener('mousemove', onMove, { passive: true });
+        return () => window.removeEventListener('mousemove', onMove);
+    }, [mouseX, mouseY]);
+
+    return (
+        <motion.div
+            className="cursor-glow fixed pointer-events-none z-[1000] w-96 h-96 rounded-full opacity-40 mix-blend-soft-light filter blur-[80px]"
+            style={{
+                left: mouseX,
+                top: mouseY,
+                x: '-50%',
+                y: '-50%',
+                background: 'radial-gradient(circle, rgba(183, 110, 121, 0.3) 0%, rgba(255, 255, 255, 0) 70%)',
+                willChange: 'transform'
+            }}
+        />
     );
 };
 

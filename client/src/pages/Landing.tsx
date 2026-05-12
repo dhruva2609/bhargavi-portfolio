@@ -6,7 +6,7 @@ import { useNarrative } from '../hooks/useNarrative';
 import bookSvg from '../assets/book.svg';
 import rosepenSvg from '../assets/rosepenhand.svg';
 import InstagramPost from '../components/InstagramPost';
-import { ArrowRight, Feather, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
 
@@ -118,12 +118,7 @@ const Landing = () => {
     const parallaxX = useTransform(smoothMouseX, [-1, 1], [-18, 18]);
     const parallaxY = useTransform(smoothMouseY, [-1, 1], [-18, 18]);
 
-    const instagramPosts = [
-        { url: "https://www.instagram.com/p/DFk4I9YvS9W/", label: "Symmetrical Silence", image: "/assets/images/arch.png" },
-        { url: "https://www.instagram.com/p/DG3E1YmsJ_V/", label: "The Alchemist's Study", image: "/assets/images/desk.png" },
-        { url: "https://www.instagram.com/p/C66Z_vlsJ-8/", label: "Petal & Paper", image: "/assets/images/flower.png" },
-        { url: "https://www.instagram.com/p/C8y4zImsL92/", label: "Architectural Verse", image: "/assets/images/abstract.png" },
-    ];
+    const { data: instagramPosts, loading: instaLoading } = useNarrative('instagram');
 
     return (
         <div className="relative selection:bg-dream-pink/20 overflow-x-hidden">
@@ -190,7 +185,7 @@ const Landing = () => {
                             className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
                         >
                             <a href="/muse" className="btn-editorial">
-                                <span>Enter the Archive</span> <ArrowRight size={12} />
+                                <span>Enter the Muse</span> <ArrowRight size={12} />
                             </a>
                             {/* <a
                                 href="mailto:pandyadhruva09@gmail.com"
@@ -371,14 +366,28 @@ const Landing = () => {
                     viewport={{ once: true }}
                     className="flex overflow-x-auto gap-6 md:gap-10 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full relative z-10"
                 >
-                    {instagramPosts.map((post, i) => (
-                        <InstagramPost
-                            key={i}
-                            url={post.url}
-                            label={post.label}
-                            placeholderImage={post.image}
-                        />
-                    ))}
+                    {instaLoading ? (
+                        [1, 2, 3, 4].map(i => <div key={i} className="shimmer min-w-[300px] aspect-[4/5] rounded-xl" />)
+                    ) : (
+                        instagramPosts && instagramPosts.length > 0 ? (
+                            instagramPosts.map((post: any, i: number) => (
+                                <InstagramPost
+                                    key={post._id || i}
+                                    url={post.url}
+                                    label={post.label}
+                                    placeholderImage={post.image}
+                                    index={i}
+                                />
+                            ))
+                        ) : (
+                            // Fallback if truly empty
+                            [1, 2, 3, 4].map(i => (
+                                <div key={i} className="editorial-card aspect-[4/5] w-[400px] bg-dream-purple/5 flex items-center justify-center">
+                                    <span className="metadata-precise text-[8px] text-dream-purple/20 uppercase tracking-widest italic">Scene awaiting light</span>
+                                </div>
+                            ))
+                        )
+                    )}
                 </motion.div>
             </section>
 

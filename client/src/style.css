@@ -143,8 +143,8 @@
   /* ── Glass Card ── */
   .editorial-card {
     background: var(--color-glass-bg);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 0.5px solid rgba(255, 255, 255, 0.12);
     border-radius: 1.5rem;
     box-shadow:
@@ -169,8 +169,8 @@
   /* ── Dream Sticker ── */
   .dream-sticker {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 0.5px solid rgba(255, 255, 255, 0.9);
     border-radius: 1.5rem;
     box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05);
@@ -609,7 +609,7 @@
     position: fixed;
     border-radius: 50%;
     pointer-events: none;
-    filter: blur(80px);
+    filter: blur(40px);
     opacity: 0.06;
     z-index: 0;
     animation: morph-blob 12s ease-in-out infinite;
@@ -658,8 +658,8 @@
   /* ── Glass pill ── */
   .glass-pill {
     background: rgba(255,255,255,0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border: 0.5px solid rgba(255,255,255,0.4);
     border-radius: 9999px;
     box-shadow:

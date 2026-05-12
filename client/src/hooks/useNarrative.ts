@@ -55,10 +55,16 @@ const SAMPLE_DATA = {
             description: "A collection of poetry centered around the transition from dawn to dusk, and the colors that define our emotions.",
             createdAt: new Date().toISOString()
         }
+    ],
+    instagram: [
+        { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "Editorial Vision", image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80" },
+        { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Symmetrical Echoes", image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80" },
+        { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Written Fragments", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80" },
+        { url: "https://www.instagram.com/p/DX-sfYmistG/", label: "The Silent Archive", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80" }
     ]
 };
 
-export const useNarrative = (endpoint: 'stories' | 'snippets') => {
+export const useNarrative = (endpoint: 'stories' | 'snippets' | 'instagram') => {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

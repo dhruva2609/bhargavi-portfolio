@@ -151,18 +151,17 @@ const Creator = () => {
     };
 
     const handleSave = async () => {
+        if (mode === 'echo') return handleSaveEcho();
         if (mode === 'melody') return handleSaveMelody();
+
         try {
             setSaving(true);
             let finalBody = editorContent.body;
 
             if (selectedBook) {
-                // If editing an existing book
                 if (selectedChapterIndex === 'new') {
-                    // Append new chapter
                     finalBody = selectedBook.body + '\n\n' + editorContent.body;
                 } else {
-                    // Replace existing chapter
                     const newChapters = [...chapters];
                     const [header, ...contentLines] = editorContent.body.split('\n');
                     newChapters[selectedChapterIndex as number] = {
@@ -177,10 +176,9 @@ const Creator = () => {
                     body: finalBody
                 }, authHeaders);
             } else {
-                // Creating new book
                 const slug = editorContent.title.toLowerCase().trim().replace(/[^\w ]+/g, '').replace(/ +/g, '-');
                 const wordCount = editorContent.body.split(/\s+/).length;
-                const readTime = Math.ceil(wordCount / 225); // Editorial pace
+                const readTime = Math.ceil(wordCount / 225);
 
                 await axios.post(`${API_URL}/api/content/stories`, {
                     title: editorContent.title,
@@ -240,7 +238,6 @@ const Creator = () => {
 
     return (
         <div className="min-h-screen pt-32 pb-32 px-6 relative overflow-hidden transition-colors duration-1000">
-            {/* Ambient Background */}
             <div className="fixed inset-0 pointer-events-none opacity-[0.015] mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")', backgroundSize: '200px 200px' }} />
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-dream-pink/5 rounded-full blur-[120px] pointer-events-none" />
 
@@ -374,7 +371,7 @@ const Creator = () => {
                                         </div>
                                     </div>
                                 ))
-                            ) : (
+                            ) : mode === 'melody' ? (
                                 songs.map((song) => (
                                     <div
                                         key={song._id}
@@ -403,7 +400,7 @@ const Creator = () => {
                                         </div>
                                     </div>
                                 ))
-                            )}
+                            ) : null}
                         </motion.div>
                     ) : (
                         <motion.div
@@ -414,7 +411,6 @@ const Creator = () => {
                             transition={{ duration: 0.8, ease: editorialEase }}
                             className="grid grid-cols-1 lg:grid-cols-12 gap-12"
                         >
-                            {/* Editor Sidebar */}
                             <div className="lg:col-span-4 space-y-8">
                                 <div className="editorial-card p-8 border border-dream-purple/5" style={{ backgroundColor: 'var(--color-glass-bg)' }}>
                                     <h4 className="metadata-precise text-muted-rosegold text-[10px] tracking-[0.4em] uppercase mb-8">
@@ -430,7 +426,6 @@ const Creator = () => {
                                                     <Plus size={16} />
                                                     <span className="font-serif italic text-lg">New Chapter</span>
                                                 </button>
-
                                                 {chapters.map((ch, idx) => (
                                                     <button
                                                         key={idx}
@@ -464,11 +459,9 @@ const Creator = () => {
                                 </div>
                             </div>
 
-                            {/* Main Editor */}
                             <div className="lg:col-span-8 space-y-8">
                                 <div className="editorial-card p-6 md:p-16 shadow-2xl relative overflow-hidden border border-dream-purple/5" style={{ backgroundColor: 'var(--color-glass-bg)' }}>
                                     <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-dream-purple via-cherry to-dream-purple opacity-40" />
-
                                     <div className="space-y-12">
                                         <div>
                                             <span className="metadata-precise text-muted-rosegold/40 text-[9px] uppercase tracking-[0.4em] mb-4 block">
@@ -483,7 +476,6 @@ const Creator = () => {
                                                 disabled={mode === 'volume' && !!selectedBook}
                                             />
                                         </div>
-
                                         <div>
                                             <span className="metadata-precise text-muted-rosegold/40 text-[9px] uppercase tracking-[0.4em] mb-4 block">
                                                 {mode === 'volume' ? 'Manuscript Content (Chapter Header + Body)' : 'Song Lyrics / Poetry'}
@@ -495,13 +487,11 @@ const Creator = () => {
                                                 onChange={(e) => setEditorContent({ ...editorContent, body: e.target.value })}
                                             />
                                         </div>
-
                                         <div className="pt-12 border-t border-dream-purple/5 flex justify-between items-center">
                                             <div className="flex items-center gap-4 text-muted-rosegold/40">
                                                 <Edit3 size={16} />
                                                 <span className="metadata-precise text-[10px] uppercase tracking-widest italic">Drafting mode active</span>
                                             </div>
-
                                             <button
                                                 onClick={handleSave}
                                                 disabled={saving}

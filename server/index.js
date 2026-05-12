@@ -40,7 +40,7 @@ app.use(helmet({
 
 // 2. Strict Production CORS
 const allowedOrigins = [
-  process.env.PRODUCTION_URL, 
+  process.env.PRODUCTION_URL,
   'http://localhost:5173',
   'http://127.0.0.1:5173'
 ].filter(Boolean);
@@ -58,7 +58,7 @@ app.use(cors({
 
 // 3. Narrative Rate Limiter
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: { error: "Too many requests from this inkwell. Please wait for the ink to dry." }
 });
@@ -80,7 +80,7 @@ app.use('/api/content', contentRouter);
 if (process.env.NODE_ENV === 'production') {
   const clientDistPath = path.join(__dirname, '../client/dist');
   app.use(express.static(clientDistPath));
-  
+
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDistPath, 'index.html'));
   });
@@ -102,6 +102,17 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+
+const server = app.listen(PORT, () => {
   console.log(`🌸 Sanctuary breathing at http://localhost:${PORT}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`⚠️  Port ${PORT} in use. Attempting to free it...`);
+    // On Windows with nodemon, just exit — nodemon will restart and the OS will clean up
+    process.exit(1);
+  } else {
+    throw err;
+  }
 });

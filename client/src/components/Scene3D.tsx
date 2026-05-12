@@ -6,7 +6,7 @@ import { MotionValue } from "framer-motion";
 
 const Embers = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<number> } }) => {
     const ref = useRef<THREE.Points>(null);
-    const count = 1000; // Optimized from 1500
+    const count = 600; // Optimized from 1000 for performance
     
     const positions = useMemo(() => {
         const pos = new Float32Array(count * 3);

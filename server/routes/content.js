@@ -3,7 +3,9 @@ import Feed from '../models/Feed.js';
 import Work from '../models/Work.js';
 import Message from '../models/Message.js';
 import Song from '../models/Song.js';
+import Instagram from '../models/Instagram.js';
 import mongoose from 'mongoose';
+import axios from 'axios';
 
 // Simple Newsletter Schema (in-memory or ad-hoc for this demo)
 const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', new mongoose.Schema({
@@ -135,6 +137,115 @@ router.put('/songs/:id', isCreator, asyncHandler(async (req, res) => {
     const updated = await Song.findByIdAndUpdate(req.params.id, { title, lyrics, mood }, { new: true });
     if (!updated) return res.status(404).json({ message: 'The melody was not found.' });
     res.json(updated);
+}));
+
+// --- INSTAGRAM (SCENES) ---
+
+router.get('/instagram', asyncHandler(async (req, res) => {
+    let posts = await Instagram.find().sort({ createdAt: -1 });
+
+    // Fallback with the actual Instagram posts we want to show
+    if (posts.length === 0) {
+        posts = [
+            { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "Editorial Vision" },
+            { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Symmetrical Echoes" },
+            { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Written Fragments" },
+            { url: "https://www.instagram.com/p/DX-sfYmistG/", label: "The Silent Archive" }
+        ];
+    }
+
+    res.json(posts);
+}));
+
+// Helper to scrape og:image from Instagram
+const scrapeInstaThumbnail = async (url) => {
+    try {
+        const sanitizedUrl = url.split('?')[0].replace(/\/+$/, '') + '/';
+        const response = await axios.get(sanitizedUrl, {
+            headers: {
+                'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+                'Accept': 'text/html',
+                'Accept-Language': 'en-US,en;q=0.9',
+            },
+            timeout: 10000
+        });
+
+        const html = response.data;
+        // Search for og:image in multiple patterns
+        const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+            || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
+            || html.match(/"display_url":"([^"]+)"/); // Fallback for some JSON-in-HTML structures
+
+        if (ogImageMatch && ogImageMatch[1]) {
+            // Unescape unicode if found in display_url match
+            return ogImageMatch[1].replace(/\\u0026/g, '&');
+        }
+        return null;
+    } catch (err) {
+        console.warn('Scrape failed for:', url, err.message);
+        return null;
+    }
+};
+
+// Thumbnail proxy: scrapes og:image from Instagram post page server-side
+router.get('/instagram/thumbnail', asyncHandler(async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'No URL provided' });
+
+    const thumbnail = await scrapeInstaThumbnail(url);
+    if (thumbnail) {
+        res.json({ thumbnail });
+    } else {
+        res.status(404).json({ error: 'No thumbnail found' });
+    }
+}));
+
+router.post('/instagram', isCreator, asyncHandler(async (req, res) => {
+    let { url, label, image } = req.body;
+    
+    // Auto-fetch thumbnail if not provided
+    if (!image && url) {
+        image = await scrapeInstaThumbnail(url);
+    }
+
+    const newPost = new Instagram({ url, label, image });
+    const saved = await newPost.save();
+    res.status(201).json(saved);
+}));
+
+router.post('/instagram/sync', isCreator, asyncHandler(async (req, res) => {
+    const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+    if (!accessToken) {
+        return res.status(400).json({ message: "No Instagram Access Token found in the sanctuary. Add it to your vault (environment variables)." });
+    }
+
+    try {
+        // Fetch from Instagram Basic Display API
+        const response = await axios.get(`https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp&access_token=${accessToken}`);
+        const media = response.data.data;
+
+        const results = [];
+        for (const item of media) {
+            // Only sync images or carousels
+            if (item.media_type === 'IMAGE' || item.media_type === 'CAROUSEL_ALBUM') {
+                const existing = await Instagram.findOne({ url: item.permalink });
+                if (!existing) {
+                    const newPost = new Instagram({
+                        url: item.permalink,
+                        label: item.caption ? item.caption.split('\n')[0].substring(0, 30) : "Untold Scene",
+                        image: item.media_url,
+                        createdAt: item.timestamp
+                    });
+                    await newPost.save();
+                    results.push(newPost);
+                }
+            }
+        }
+        res.json({ message: `Synced ${results.length} new scenes.`, count: results.length });
+    } catch (err) {
+        console.error("Instagram sync failed:", err.response?.data || err.message);
+        res.status(500).json({ message: "The bridge to Instagram is unstable.", error: err.response?.data || err.message });
+    }
 }));
 
 export default router;

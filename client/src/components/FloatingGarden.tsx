@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion';
 
 const RealPeony = ({ className, style }: { className?: string, style?: React.CSSProperties }) => {
     const outerAngles = Array.from({ length: 8 }).map((_, i) => i * 45);
@@ -84,26 +84,14 @@ const RealLily = ({ className, style }: { className?: string, style?: React.CSSP
     );
 };
 
-const FloatingGarden = () => {
+const FloatingGarden = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<number> } }) => {
     const { scrollYProgress } = useScroll();
     
     // Dissolving Effects: Simplified to just opacity for performance
     const opacityEffect = useTransform(scrollYProgress, [0.1, 0.25], [0.85, 0]);
 
-    const mouseX = useMotionValue(0);
-    const mouseY = useMotionValue(0);
-
-    const springX = useSpring(mouseX, { stiffness: 40, damping: 20 });
-    const springY = useSpring(mouseY, { stiffness: 40, damping: 20 });
-
-    React.useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            mouseX.set((e.clientX / window.innerWidth) - 0.5);
-            mouseY.set((e.clientY / window.innerHeight) - 0.5);
-        };
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [mouseX, mouseY]);
+    const springX = useSpring(mouse.x, { stiffness: 40, damping: 20 });
+    const springY = useSpring(mouse.y, { stiffness: 40, damping: 20 });
 
     const y1 = useTransform(scrollYProgress, [0, 1], ["0vh", "-30vh"]);
     const y2 = useTransform(scrollYProgress, [0, 1], ["0vh", "-60vh"]);
@@ -120,19 +108,19 @@ const FloatingGarden = () => {
             style={{ opacity: opacityEffect }}
             className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
         >
-            <motion.div style={{ y: y1, x: swayX1, rotate: rotate1, transform: "translateZ(0)" }} className="absolute top-[5%] left-[-5%] w-96 h-96 md:w-[45rem] md:h-[45rem] will-change-transform">
+            <motion.div style={{ y: y1, x: swayX1, rotate: rotate1 }} className="absolute top-[5%] left-[-5%] w-96 h-96 md:w-[45rem] md:h-[45rem] will-change-transform">
                 <RealPeony className="w-full h-full opacity-90" />
             </motion.div>
             
-            <motion.div style={{ y: y2, x: swayX2, rotate: rotate2, transform: "translateZ(0)" }} className="absolute top-[25%] right-[-10%] w-80 h-80 md:w-[35rem] md:h-[35rem] will-change-transform">
+            <motion.div style={{ y: y2, x: swayX2, rotate: rotate2 }} className="absolute top-[25%] right-[-10%] w-80 h-80 md:w-[35rem] md:h-[35rem] will-change-transform">
                 <RealLily className="w-full h-full opacity-70" />
             </motion.div>
 
-            <motion.div style={{ y: y3, x: swayX1, rotate: rotate2, transform: "translateZ(0)" }} className="absolute top-[60%] left-[5%] w-72 h-72 md:w-[30rem] md:h-[30rem] will-change-transform">
+            <motion.div style={{ y: y3, x: swayX1, rotate: rotate2 }} className="absolute top-[60%] left-[5%] w-72 h-72 md:w-[30rem] md:h-[30rem] will-change-transform">
                 <RealPeony className="w-full h-full opacity-60" style={{ transform: 'scaleX(-1)' }} />
             </motion.div>
 
-            <motion.div style={{ y: y4, x: swayX2, rotate: rotate1, transform: "translateZ(0)" }} className="absolute top-[80%] right-[5%] w-96 h-96 md:w-[40rem] md:h-[40rem] will-change-transform">
+            <motion.div style={{ y: y4, x: swayX2, rotate: rotate1 }} className="absolute top-[80%] right-[5%] w-96 h-96 md:w-[40rem] md:h-[40rem] will-change-transform">
                 <RealLily className="w-full h-full opacity-80" style={{ transform: 'scaleY(-1)' }} />
             </motion.div>
         </motion.div>
