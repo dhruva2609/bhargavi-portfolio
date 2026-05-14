@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { Music, ArrowLeft, Sparkles, Feather, Play, Heart } from 'lucide-react';
 import axios from 'axios';
+import SubscribeForm from '../components/SubscribeForm';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
@@ -18,8 +19,21 @@ const moodColour = (mood: string) => {
 
 // ── Song List Card ────────────────────────────────────────────────
 const SongCard = ({ song, onClick, index }: { song: any; onClick: () => void; index: number }) => {
-    const [liked, setLiked] = useState(false);
+    const [likes, setLikes] = useState(song.likes || 0);
+    const [isLiked, setIsLiked] = useState(false);
     const clr = moodColour(song.mood);
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isLiked) return;
+        try {
+            const res = await axios.post(`${API_URL}/api/content/songs/${song._id}/like`);
+            setLikes(res.data.likes);
+            setIsLiked(true);
+        } catch (err) {
+            console.error("The melody remains unshared:", err);
+        }
+    };
 
     return (
         <motion.div
@@ -49,13 +63,14 @@ const SongCard = ({ song, onClick, index }: { song: any; onClick: () => void; in
                     </span>
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={(e) => { e.stopPropagation(); setLiked(l => !l); }}
-                            className="text-dream-purple/20 hover:text-cherry transition-colors duration-300 active:scale-95"
+                            onClick={handleLike}
+                            className="text-dream-purple/20 hover:text-cherry transition-colors duration-300 active:scale-95 flex items-center gap-1 group/heart"
                         >
                             <Heart
                                 size={14}
-                                className={liked ? 'fill-cherry text-cherry' : ''}
+                                className={isLiked ? 'fill-cherry text-cherry' : ''}
                             />
+                            <span className="metadata-precise text-[7px]">{likes}</span>
                         </button>
                         <span className="metadata-precise text-[7px] text-muted-rosegold/30">
                             {new Date(song.publishedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -266,6 +281,15 @@ const Songs = () => {
                                         />
                                     ))
                                 )}
+                            </div>
+
+                            {/* ── Subscribe Form ── */}
+                            <div className="pt-16 md:pt-32">
+                                <SubscribeForm 
+                                    source="Melodies" 
+                                    title="Lyric Echoes"
+                                    subtitle="Subscribe to hear the melodies first. New lyrics sent to your sanctuary as they are born."
+                                />
                             </div>
                         </motion.div>
                     ) : (

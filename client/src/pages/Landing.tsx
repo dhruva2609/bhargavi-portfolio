@@ -6,7 +6,8 @@ import { useNarrative } from '../hooks/useNarrative';
 import bookSvg from '../assets/book.svg';
 import rosepenSvg from '../assets/rosepenhand.svg';
 import InstagramPost from '../components/InstagramPost';
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Feather } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
 
@@ -187,12 +188,12 @@ const Landing = () => {
                             <a href="/muse" className="btn-editorial">
                                 <span>Enter the Muse</span> <ArrowRight size={12} />
                             </a>
-                            {/* <a
-                                href="mailto:pandyadhruva09@gmail.com"
+                            <Link
+                                to="/muse#subscribe"
                                 className="metadata-precise text-[9px] text-dream-purple/35 hover:text-cherry transition-colors duration-300 flex items-center gap-2"
                             >
-                                <Feather size={12} /> Collaborate
-                            </a> */}
+                                <Feather size={12} /> Subscribe
+                            </Link>
                         </motion.div>
                     </motion.div>
 
@@ -320,8 +321,10 @@ const Landing = () => {
                             posts.map((post: any, idx: number) => (
                                 <SnippetCard
                                     key={post._id || idx}
+                                    id={post._id}
                                     content={post.content || post.body}
                                     date={post.date || new Date(post.createdAt).toLocaleDateString()}
+                                    initialLikes={post.likes || 0}
                                 />
                             ))
                         )}
@@ -465,15 +468,15 @@ const Landing = () => {
                             <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 rounded-full" />
                         </a>
 
-                        <a
-                            href="mailto:pandyadhruva09@gmail.com"
+                        <Link
+                            to="/muse#subscribe"
                             className="group relative inline-flex items-center gap-3 px-8 md:px-14 py-4 md:py-5 border-2 border-dream-pink/10 hover:border-dream-pink/40 rounded-full transition-all duration-700 overflow-hidden"
                         >
                             <span className="relative z-10 metadata-precise text-[9px] md:text-[10px] text-dream-pink/50 group-hover:text-dream-purple transition-colors">
-                                Collaborate
+                                Subscribe
                             </span>
                             <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-right transition-transform duration-700 rounded-full" />
-                        </a>
+                        </Link>
                     </motion.div>
 
                     {/* Decorative sparkles */}

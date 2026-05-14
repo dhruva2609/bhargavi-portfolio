@@ -2,6 +2,7 @@ import Masonry from 'react-masonry-css';
 import SnippetCard from '../components/SnippetCard';
 import { useNarrative } from '../hooks/useNarrative';
 import bookSvg from '../assets/book.svg';
+import SubscribeForm from '../components/SubscribeForm';
 
 const Feed = () => {
     const { data: posts, loading } = useNarrative('snippets');
@@ -38,12 +39,22 @@ const Feed = () => {
                 {posts.map((post: any, idx: number) => (
                     <div key={post._id || idx} className="mb-12">
                         <SnippetCard 
+                            id={post._id}
                             content={post.content || post.body} 
                             date={post.date || new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} 
+                            initialLikes={post.likes || 0}
                         />
                     </div>
                 ))}
             </Masonry>
+
+            <div className="mt-32">
+                <SubscribeForm 
+                    source="Archive (Echoes)" 
+                    title="Whispers of the Archive"
+                    subtitle="Subscribe to receive new fragments and echoes as they are unearthed from the silence."
+                />
+            </div>
         </div>
     );
 };

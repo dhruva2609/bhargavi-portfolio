@@ -11,6 +11,7 @@ const messageSchema = new mongoose.Schema(
       match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
     },
     message: { type: String, required: true, trim: true },
+    source: { type: String, default: 'General' },
     read: { type: Boolean, default: false },
   },
   { timestamps: true }

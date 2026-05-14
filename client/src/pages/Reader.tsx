@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { ArrowLeft, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Sparkles, Heart } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -17,6 +17,8 @@ const Reader: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
     const [stamps, setStamps] = useState<{ id: number, x: number, y: number, spread: number }[]>([]);
+    const [likes, setLikes] = useState(0);
+    const [isLiked, setIsLiked] = useState(false);
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -40,6 +42,7 @@ const Reader: React.FC = () => {
                 const res = await axios.get(`${API_URL}/api/content/stories/${slug}`);
                 if (!res.data) throw new Error("Narrative missing");
                 setWork(res.data);
+                setLikes(res.data.likes || 0);
             } catch (err) {
                 console.error("The archive was silent:", err);
                 setWork(null);
@@ -49,6 +52,17 @@ const Reader: React.FC = () => {
         };
         fetchWork();
     }, [slug]);
+
+    const handleLike = async () => {
+        if (isLiked) return;
+        try {
+            const res = await axios.post(`${API_URL}/api/content/stories/${work._id}/like`);
+            setLikes(res.data.likes);
+            setIsLiked(true);
+        } catch (err) {
+            console.error("Could not echo your appreciation:", err);
+        }
+    };
 
     const pages = useMemo(() => {
         if (!work?.body) return [];
@@ -113,8 +127,15 @@ const Reader: React.FC = () => {
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-4 opacity-0 md:opacity-100">
-                        <BookOpen size={18} className="text-dream-purple/20" />
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleLike}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-500 ${isLiked ? 'text-cherry bg-cherry/5' : 'text-dream-purple/30 hover:text-cherry hover:bg-cherry/5'}`}
+                        >
+                            <Heart size={16} className={isLiked ? 'fill-cherry' : ''} />
+                            <span className="metadata-precise text-[10px]">{likes}</span>
+                        </button>
+                        <BookOpen size={18} className="text-dream-purple/20 hidden md:block" />
                     </div>
                 </div>
 

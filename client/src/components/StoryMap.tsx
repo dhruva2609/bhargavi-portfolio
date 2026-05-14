@@ -42,7 +42,7 @@ const StoryNode = ({ position, title, type, color }: any) => {
 const Connections = ({ nodes }: { nodes: any[] }) => {
     return (
         <>
-            {nodes.map((node, i) => (
+            {nodes.map((node) => (
                 node.connections?.map((targetId: number) => {
                     const target = nodes.find(n => n.id === targetId);
                     if (!target) return null;
@@ -97,9 +97,7 @@ const StoryMap = () => {
                     <bufferGeometry>
                         <float32BufferAttribute
                             attach="attributes-position"
-                            count={100}
-                            array={new Float32Array(300).map(() => (Math.random() - 0.5) * 15)}
-                            itemSize={3}
+                            args={[new Float32Array(300).map(() => (Math.random() - 0.5) * 15), 3]}
                         />
                     </bufferGeometry>
                     <pointsMaterial size={0.02} color="#B76E79" transparent opacity={0.3} />

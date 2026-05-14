@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { motion, useScroll, useSpring, useTransform, useMotionValue, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, Heart } from 'lucide-react';
 import typewriterSvg from '../assets/typewriter.svg';
 import featherSvg from '../assets/Feather.svg';
+import SubscribeForm from '../components/SubscribeForm';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
@@ -35,6 +36,21 @@ const MOCK_BOOKS = [
 // ── Book card with 3D hover tilt ──────────────────────────────────
 const BookCard = ({ story, index }: { story: any; index: number }) => {
     const [hovered, setHovered] = useState(false);
+    const [likes, setLikes] = useState(story.likes || 0);
+    const [isLiked, setIsLiked] = useState(false);
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isLiked) return;
+        try {
+            const res = await axios.post(`${API_URL}/api/content/stories/${story._id}/like`);
+            setLikes(res.data.likes);
+            setIsLiked(true);
+        } catch (err) {
+            console.error("The bookshelf remains unmoved:", err);
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -80,8 +96,17 @@ const BookCard = ({ story, index }: { story: any; index: number }) => {
                         transition={{ duration: 0.3 }}
                         className="absolute -bottom-10 left-0 right-0 flex items-center justify-between px-2"
                     >
-                        <span className="metadata-precise text-dream-purple/40 text-[7px]">Read Fragment</span>
-                        <ArrowRight size={12} className="text-cherry" />
+                        <button 
+                            onClick={handleLike}
+                            className={`flex items-center gap-1 group/like ${isLiked ? 'text-cherry' : 'text-dream-purple/40 hover:text-cherry'} transition-colors duration-300`}
+                        >
+                            <Heart size={10} className={isLiked ? 'fill-cherry' : ''} />
+                            <span className="text-[7px] metadata-precise">{likes}</span>
+                        </button>
+                        <div className="flex items-center gap-1">
+                            <span className="metadata-precise text-dream-purple/40 text-[7px]">Read Fragment</span>
+                            <ArrowRight size={10} className="text-cherry" />
+                        </div>
                     </motion.div>
                 </Link>
             </motion.div>
@@ -266,6 +291,15 @@ const Muse = () => {
                         </div>
                     )}
                 </div>
+            </section>
+            
+            {/* ── Subscribe Form ── */}
+            <section className="relative z-10 px-6 py-16 md:py-32">
+                <SubscribeForm 
+                    source="Archive Muse" 
+                    title="The Midnight Bulletin"
+                    subtitle="Subscribe to receive a fragment of the narrative whenever a new story is etched into the archive."
+                />
             </section>
 
             {/* ── Finis ornament ── */}

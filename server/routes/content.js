@@ -6,6 +6,17 @@ import Song from '../models/Song.js';
 import Instagram from '../models/Instagram.js';
 import mongoose from 'mongoose';
 import axios from 'axios';
+import nodemailer from 'nodemailer';
+import { welcomeTemplate, inquiryTemplate } from '../utils/emailTemplates.js';
+
+// Email Transporter Setup
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 // Simple Newsletter Schema (in-memory or ad-hoc for this demo)
 const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', new mongoose.Schema({
@@ -43,6 +54,16 @@ router.post('/snippet', isCreator, asyncHandler(async (req, res) => {
   });
   const saved = await snippet.save();
   res.status(201).json(saved);
+}));
+
+router.post('/snippets/:id/like', asyncHandler(async (req, res) => {
+    const updated = await Feed.findByIdAndUpdate(
+        req.params.id,
+        { $inc: { likes: 1 } },
+        { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'The echo was not found.' });
+    res.json({ likes: updated.likes });
 }));
 
 // --- STORIES (WORK) ---
@@ -93,28 +114,109 @@ router.put('/stories/:id', isCreator, asyncHandler(async (req, res) => {
   res.json(updated);
 }));
 
+router.post('/stories/:id/like', asyncHandler(async (req, res) => {
+  const updated = await Work.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { likes: 1 } },
+    { new: true }
+  );
+  if (!updated) return res.status(404).json({ message: 'The narrative was not found.' });
+  res.json({ likes: updated.likes });
+}));
+
 // --- MESSAGES (COLLABORATION) ---
 
 router.post('/collaborate', asyncHandler(async (req, res) => {
-  const { name, email, message } = req.body;
+  const { name, email, message, source } = req.body;
+  console.log(`\n--- New Message Received ---`);
+  console.log(`From: ${name} (${email})`);
+  
   const newMessage = new Message({ name, email, message });
   await newMessage.save();
+  console.log(`✅ Message saved to database.`);
+
+  // Lazy-initialize Transporter
+  const user = process.env.EMAIL_USER;
+  const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+  const receiver = process.env.EMAIL_RECEIVER || 'dhruvapandya86@gmail.com';
+
+  if (user && pass) {
+    console.log(`✉️ Sending notification to ${receiver}...`);
+    const dynamicTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass }
+    });
+
+    const mailOptions = {
+      from: user,
+      to: receiver,
+      subject: `New Collaboration Inquiry from ${name} [via ${source || 'Portfolio'}]`,
+      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+      html: inquiryTemplate(name, email, message, source)
+    };
+
+    await dynamicTransporter.sendMail(mailOptions);
+    console.log(`🚀 Success: Notification sent to author.`);
+  } else {
+    console.warn("⚠️ Warning: Email notification skipped. Check server/.env credentials.");
+  }
+
   res.status(201).json({ message: "Your message has been etched into the archive." });
 }));
 
 // --- NEWSLETTER (MIDNIGHT BULLETIN) ---
 
 router.post('/subscribe', asyncHandler(async (req, res) => {
-    const { email } = req.body;
+    const { email, source } = req.body;
+    console.log(`\n--- New Subscription Request ---`);
+    console.log(`Target: ${email}`);
+    console.log(`Source: ${source || 'Unknown'}`);
+    
     if (!email) return res.status(400).json({ message: "An email address is required." });
     
     try {
-        const subscriber = new Subscriber({ email });
-        await subscriber.save();
+        // Find or Create Subscriber
+        let subscriber = await Subscriber.findOne({ email });
+        if (!subscriber) {
+            subscriber = new Subscriber({ email });
+            await subscriber.save();
+            console.log(`✅ ${email} saved as new subscriber.`);
+        } else {
+            console.log(`ℹ️ ${email} is already a subscriber. Sending another welcome echo for ${source || 'this section'}.`);
+        }
+
+        // Lazy-initialize Transporter
+        const user = process.env.EMAIL_USER;
+        const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+
+        if (user && pass) {
+            console.log(`✉️ Initializing mailer for ${user}...`);
+            const dynamicTransporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { user, pass }
+            });
+
+            const welcomeOptions = {
+                from: `"The Midnight Bulletin" <${user}>`,
+                to: email,
+                subject: `Welcome to ${source || 'The Archive'}`,
+                text: `Thank you for joining the Midnight Bulletin. You are now part of the silent archive. You will receive echoes from ${source || 'the sanctuary'} whenever new content is etched.`,
+                html: welcomeTemplate(source)
+            };
+
+            await dynamicTransporter.sendMail(welcomeOptions);
+            console.log(`🚀 Success: Welcome email sent to ${email}`);
+        }
+ else {
+            console.warn("⚠️ Error: EMAIL_USER or EMAIL_PASS is missing in server/.env");
+            console.log("Current User:", user || "NOT SET");
+            console.log("Current Pass:", pass ? "STARS(***)" : "NOT SET");
+        }
+
         res.status(201).json({ message: "You have been added to the Midnight Bulletin." });
     } catch (err) {
-        if (err.code === 11000) return res.status(400).json({ message: "You are already part of the bulletin." });
-        throw err;
+        console.error("❌ Subscription Error Details:", err.message);
+        res.status(500).json({ message: "A tear in the narrative occurred." });
     }
 }));
 
@@ -137,6 +239,16 @@ router.put('/songs/:id', isCreator, asyncHandler(async (req, res) => {
     const updated = await Song.findByIdAndUpdate(req.params.id, { title, lyrics, mood }, { new: true });
     if (!updated) return res.status(404).json({ message: 'The melody was not found.' });
     res.json(updated);
+}));
+
+router.post('/songs/:id/like', asyncHandler(async (req, res) => {
+    const updated = await Song.findByIdAndUpdate(
+        req.params.id,
+        { $inc: { likes: 1 } },
+        { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'The melody was not found.' });
+    res.json({ likes: updated.likes });
 }));
 
 // --- INSTAGRAM (SCENES) ---

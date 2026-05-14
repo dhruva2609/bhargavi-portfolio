@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { Book, Plus, ChevronRight, Save, Edit3, Loader2, Music } from 'lucide-react';
+import { Book, Plus, ChevronRight, Save, Edit3, Loader2, Music, Heart } from 'lucide-react';
 import featherSvg from '../assets/Feather.svg';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -365,9 +365,15 @@ const Creator = () => {
                                         <p className="text-charcoal/40 text-sm line-clamp-2 mb-8 font-serif italic">
                                             {book.synopsis}
                                         </p>
-                                        <div className="flex items-center gap-2 text-dream-purple/30 group-hover:text-dream-purple transition-colors">
-                                            <span className="metadata-precise text-[8px] uppercase tracking-[0.3em]">Edit Manuscript</span>
-                                            <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-dream-purple/30 group-hover:text-dream-purple transition-colors">
+                                                <span className="metadata-precise text-[8px] uppercase tracking-[0.3em]">Edit Manuscript</span>
+                                                <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-cherry/40">
+                                                <Heart size={10} className="fill-cherry/10" />
+                                                <span className="metadata-precise text-[8px]">{book.likes || 0}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -394,9 +400,15 @@ const Creator = () => {
                                         <p className="text-charcoal/40 text-sm line-clamp-3 mb-8 font-serif italic">
                                             {song.lyrics}
                                         </p>
-                                        <div className="flex items-center gap-2 text-dream-purple/30 group-hover:text-cherry transition-colors">
-                                            <span className="metadata-precise text-[8px] uppercase tracking-[0.3em]">Edit Lyrics</span>
-                                            <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2 text-dream-purple/30 group-hover:text-cherry transition-colors">
+                                                <span className="metadata-precise text-[8px] uppercase tracking-[0.3em]">Edit Lyrics</span>
+                                                <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                                            </div>
+                                            <div className="flex items-center gap-1.5 text-cherry/40">
+                                                <Heart size={10} className="fill-cherry/10" />
+                                                <span className="metadata-precise text-[8px]">{song.likes || 0}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -426,7 +438,7 @@ const Creator = () => {
                                                     <Plus size={16} />
                                                     <span className="font-serif italic text-lg">New Chapter</span>
                                                 </button>
-                                                {chapters.map((ch, idx) => (
+                                                {chapters.map((ch: any, idx: number) => (
                                                     <button
                                                         key={idx}
                                                         onClick={() => handleSelectChapter(idx)}

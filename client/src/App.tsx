@@ -8,7 +8,7 @@ import Muse from './pages/Muse';
 import Songs from './pages/Songs';
 import Layout from './components/Layout';
 
-import React, { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import GlobalLoader from './components/GlobalLoader';
 

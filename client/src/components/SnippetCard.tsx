@@ -2,8 +2,25 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Quote } from 'lucide-react';
 
-const SnippetCard = ({ content, date }: { content: string; date: string }) => {
-    const [liked, setLiked] = useState(false);
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+const SnippetCard = ({ id, content, date, initialLikes }: { id: string; content: string; date: string; initialLikes: number }) => {
+    const [likes, setLikes] = useState(initialLikes || 0);
+    const [isLiked, setIsLiked] = useState(false);
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isLiked || !id) return;
+        try {
+            const res = await axios.post(`${API_URL}/api/content/snippets/${id}/like`);
+            setLikes(res.data.likes);
+            setIsLiked(true);
+        } catch (err) {
+            console.error("The echo remains unappreciated:", err);
+        }
+    };
 
     return (
         <motion.div
@@ -35,14 +52,15 @@ const SnippetCard = ({ content, date }: { content: string; date: string }) => {
                     </div>
 
                     <button
-                        onClick={(e) => { e.stopPropagation(); setLiked(l => !l); }}
-                        className="text-dream-purple/15 hover:text-cherry transition-colors duration-300 active:scale-90"
+                        onClick={handleLike}
+                        className="text-dream-purple/15 hover:text-cherry transition-colors duration-300 active:scale-90 flex items-center gap-1.5"
                         aria-label="Like this snippet"
                     >
                         <Heart
                             size={13}
-                            className={`transition-all duration-300 ${liked ? 'fill-cherry text-cherry scale-110' : ''}`}
+                            className={`transition-all duration-300 ${isLiked ? 'fill-cherry text-cherry scale-110' : ''}`}
                         />
+                        <span className="metadata-precise text-[8px]">{likes}</span>
                     </button>
                 </div>
             </div>
