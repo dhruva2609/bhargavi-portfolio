@@ -5,7 +5,7 @@ const feedSchema = new mongoose.Schema(
     content: { 
       type: String, 
       required: [true, 'Fragment content is required'], 
-      maxlength: [500, 'A fragment must be under 500 characters'],
+      maxlength: [5000, 'A fragment must be under 5000 characters'],
       trim: true 
     },
     type: { type: String, default: 'Snippet' },

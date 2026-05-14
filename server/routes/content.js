@@ -7,7 +7,7 @@ import Instagram from '../models/Instagram.js';
 import mongoose from 'mongoose';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
-import { welcomeTemplate, inquiryTemplate } from '../utils/emailTemplates.js';
+import { welcomeTemplate, inquiryTemplate, broadcastTemplate } from '../utils/emailTemplates.js';
 
 // Email Transporter Setup
 const transporter = nodemailer.createTransport({
@@ -17,6 +17,44 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
+
+// Helper to broadcast to all subscribers
+const broadcastUpdate = async (type, title, summary, link) => {
+    try {
+        const subscribers = await Subscriber.find({});
+        if (subscribers.length === 0) return;
+
+        const user = process.env.EMAIL_USER;
+        const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+        
+        if (!user || !pass) {
+            console.warn("⚠️ Broadcast skipped: Email credentials missing.");
+            return;
+        }
+
+        const bTransporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: { user, pass }
+        });
+
+        console.log(`📣 Broadcasting ${type} to ${subscribers.length} subscribers...`);
+
+        const emailPromises = subscribers.map(sub => {
+            const mailOptions = {
+                from: `"Bhargavi's Editorial" <${user}>`,
+                to: sub.email,
+                subject: `New Echo: ${title}`,
+                html: broadcastTemplate(type, title, summary, link)
+            };
+            return bTransporter.sendMail(mailOptions).catch(e => console.warn(`Failed for ${sub.email}: ${e.message}`));
+        });
+
+        await Promise.allSettled(emailPromises);
+        console.log(`🚀 Broadcast complete for "${title}"`);
+    } catch (err) {
+        console.error("❌ Broadcast failed:", err.message);
+    }
+};
 
 // Simple Newsletter Schema (in-memory or ad-hoc for this demo)
 const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', new mongoose.Schema({
@@ -40,6 +78,11 @@ const isCreator = (req, res, next) => {
   return res.status(401).json({ message: "The sanctuary is closed. Your passphrase is unrecognized." });
 };
 
+// Verify passphrase
+router.get('/verify', isCreator, (req, res) => {
+  res.json({ message: "Welcome, Creator." });
+});
+
 // --- SNIPPETS (FEED) ---
 
 router.get('/snippets', asyncHandler(async (req, res) => {
@@ -53,6 +96,10 @@ router.post('/snippet', isCreator, asyncHandler(async (req, res) => {
     content: body || content
   });
   const saved = await snippet.save();
+  
+  // Notify subscribers
+  broadcastUpdate('Recent Echo', 'A new fragment has been etched', saved.content.substring(0, 100) + '...', `${process.env.CLIENT_URL || 'https://bhargavi-portfolio.vercel.app'}/feed`);
+  
   res.status(201).json(saved);
 }));
 
@@ -98,6 +145,10 @@ router.post('/stories', isCreator, asyncHandler(async (req, res) => {
   });
   
   const saved = await work.save();
+  
+  // Notify subscribers
+  broadcastUpdate('Narrative', saved.title, saved.synopsis, `${process.env.CLIENT_URL || 'https://bhargavi-portfolio.vercel.app'}/reader/${saved.slug}`);
+  
   res.status(201).json(saved);
 }));
 
@@ -241,6 +292,10 @@ router.post('/songs', isCreator, asyncHandler(async (req, res) => {
     const { title, lyrics, mood } = req.body;
     const song = new Song({ title, lyrics, mood });
     const saved = await song.save();
+    
+    // Notify subscribers
+    broadcastUpdate('Melody', saved.title, saved.lyrics.substring(0, 100) + '...', `${process.env.CLIENT_URL || 'https://bhargavi-portfolio.vercel.app'}/songs`);
+    
     res.status(201).json(saved);
 }));
 
@@ -266,18 +321,17 @@ router.post('/songs/:id/like', asyncHandler(async (req, res) => {
     res.json({ likes: updated.likes });
 }));
 
-// --- INSTAGRAM (SCENES) ---
+// --- SCENES (VISUALS) ---
 
 router.get('/instagram', asyncHandler(async (req, res) => {
     let posts = await Instagram.find().sort({ createdAt: -1 });
 
-    // Fallback with the actual Instagram posts we want to show
+    // Fallback with example scenes if none exist
     if (posts.length === 0) {
         posts = [
-            { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "Editorial Vision" },
-            { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Symmetrical Echoes" },
-            { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Written Fragments" },
-            { url: "https://www.instagram.com/p/DX-sfYmistG/", label: "The Silent Archive" }
+            { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "Editorial Vision", image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80" },
+            { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Symmetrical Echoes", image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80" },
+            { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Written Fragments", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80" }
         ];
     }
 
@@ -290,21 +344,21 @@ const scrapeInstaThumbnail = async (url) => {
         const sanitizedUrl = url.split('?')[0].replace(/\/+$/, '') + '/';
         const response = await axios.get(sanitizedUrl, {
             headers: {
-                'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
-                'Accept': 'text/html',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.9',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
             },
-            timeout: 10000
+            timeout: 15000
         });
 
         const html = response.data;
-        // Search for og:image in multiple patterns
         const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
             || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
-            || html.match(/"display_url":"([^"]+)"/); // Fallback for some JSON-in-HTML structures
+            || html.match(/"display_url":"([^"]+)"/);
 
         if (ogImageMatch && ogImageMatch[1]) {
-            // Unescape unicode if found in display_url match
             return ogImageMatch[1].replace(/\\u0026/g, '&');
         }
         return null;
@@ -330,13 +384,19 @@ router.get('/instagram/thumbnail', asyncHandler(async (req, res) => {
 router.post('/instagram', isCreator, asyncHandler(async (req, res) => {
     let { url, label, image } = req.body;
     
-    // Auto-fetch thumbnail if not provided
-    if (!image && url) {
+    // Auto-fetch thumbnail ONLY if not provided AND url exists
+    if (!image && url && url.includes('instagram.com')) {
+        console.log(`🔍 No image provided for ${label}. Attempting to scrape from Instagram...`);
         image = await scrapeInstaThumbnail(url);
     }
 
     const newPost = new Instagram({ url, label, image });
     const saved = await newPost.save();
+    console.log(`✨ Scene saved: ${label}`);
+    
+    // Notify subscribers
+    broadcastUpdate('Visual Scene', label, 'A new visual fragment has been captured in the archive.', `${process.env.CLIENT_URL || 'https://bhargavi-portfolio.vercel.app'}/`);
+    
     res.status(201).json(saved);
 }));
 

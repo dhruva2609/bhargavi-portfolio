@@ -104,7 +104,7 @@ const Reader: React.FC = () => {
         <div className="min-h-screen flex flex-col items-center justify-center bg-off-white px-6 text-center">
             <span className="metadata-precise text-muted-rosegold text-[10px] tracking-[0.8em] uppercase mb-8">The Page is Blank</span>
             <h1 className="font-serif text-4xl italic text-dream-purple mb-8">This narrative has been lost to the archive.</h1>
-            <button 
+            <button
                 onClick={() => navigate('/muse')}
                 className="btn-editorial"
             >
@@ -226,10 +226,6 @@ const Reader: React.FC = () => {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#FDFBF7] to-transparent pointer-events-none z-20" />
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 metadata-precise text-muted-rosegold/40 text-[8px] tracking-[0.4em] z-30">
-                                    Finis
                                 </div>
                             </div>
                         ) : (

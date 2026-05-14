@@ -174,7 +174,7 @@ const Muse = () => {
             {/* ── Hero: Who She Is ── */}
             <div className="max-w-[1600px] mx-auto grid-asymmetric relative z-10 editorial-section pt-28 md:pt-36 pb-24 md:pb-48">
                 {/* Left: text */}
-                <div className="col-span-12 lg:col-span-7 flex flex-col justify-center gap-12 md:gap-20 pt-8 md:pt-20">
+                <div className="col-span-12 lg:col-span-7 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-8 md:gap-20 pt-8 md:pt-20">
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -191,7 +191,7 @@ const Muse = () => {
 
                     <motion.div
                         style={{ opacity: textOpacity }}
-                        className="space-y-8 md:space-y-12 font-serif text-lg md:text-2xl leading-[1.7] text-charcoal/70 italic max-w-2xl relative"
+                        className="space-y-8 md:space-y-12 font-serif text-lg md:text-2xl leading-[1.7] text-charcoal/70 italic max-w-2xl relative px-4 md:px-0"
                     >
                         <p className="relative text-justify">
                             <span className="absolute -left-8 -top-8 text-[5rem] md:text-[8rem] text-dream-pink/25 font-serif select-none pointer-events-none leading-none">
@@ -217,20 +217,20 @@ const Muse = () => {
                         whileInView={{ scaleX: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 1.2, ease: editorialEase }}
-                        className="h-[1px] w-32 bg-gradient-to-r from-dream-purple to-cherry origin-left"
+                        className="h-[1px] w-32 bg-gradient-to-r from-dream-purple to-cherry origin-center lg:origin-left"
                     />
                 </div>
 
                 {/* Right: typewriter SVG */}
-                <div className="col-span-12 lg:col-span-5 relative mt-12 lg:mt-0 flex items-center justify-center">
-                    <div className="relative lg:sticky top-40">
+                <div className="col-span-12 lg:col-span-5 relative mt-4 lg:mt-0 flex items-center justify-center">
+                    <div className="relative lg:sticky lg:top-40">
                         <motion.div
                             style={{ x: isMobile ? 0 : parallaxX1, filter: 'drop-shadow(0 40px 60px rgba(104,76,143,0.15))' }}
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: false, amount: 0.3 }}
                             transition={{ duration: 1.5, ease: editorialEase }}
-                            className="w-full max-w-[240px] md:max-w-[420px] float-anim"
+                            className="w-full max-w-[280px] sm:max-w-[320px] md:max-w-[420px] float-anim"
                         >
                             <img src={typewriterSvg} alt="Vintage Typewriter" className="w-full h-auto" />
                         </motion.div>
@@ -241,7 +241,7 @@ const Muse = () => {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8, delay: 0.5, ease: editorialEase }}
-                            className="absolute -bottom-4 -right-4 md:-bottom-8 md:-right-8 editorial-card px-4 py-3 flex items-center gap-3"
+                            className="absolute -bottom-2 -right-2 md:-bottom-8 md:-right-8 glass-pill px-5 py-3 flex items-center gap-3 shadow-editorial"
                         >
                             <BookOpen size={14} className="text-dream-purple/50" />
                             <div>
@@ -254,7 +254,7 @@ const Muse = () => {
             </div>
 
             {/* ── Bookshelf Archive ── */}
-            <section className="relative z-10 px-6 md:px-16 lg:px-24 py-16 md:py-32 overflow-hidden">
+            <section className="relative z-10 px-6 md:px-16 lg:px-24 py-4 md:py-4 overflow-hidden">
                 {/* Subtle gradient bg */}
                 <div
                     className="absolute inset-0 pointer-events-none"
@@ -304,7 +304,7 @@ const Muse = () => {
             </section>
 
             {/* ── Finis ornament ── */}
-            <div className="flex flex-col justify-center items-center pb-16 md:pb-24 gap-6 relative z-10">
+            <div className="flex flex-col justify-center items-center pb-8 md:pb-8 relative z-10">
                 <motion.img
                     src={featherSvg}
                     alt="Feather"
@@ -317,7 +317,7 @@ const Muse = () => {
                 />
                 <div className="flex items-center gap-8 md:gap-12 opacity-25">
                     <div className="h-[1px] w-20 md:w-32 bg-dream-purple/50" />
-                    <p className="metadata-precise text-[9px] text-dream-purple">Finis</p>
+                    <p className="metadata-precise text-[9px] text-dream-purple">Finish</p>
                     <div className="h-[1px] w-20 md:w-32 bg-dream-purple/50" />
                 </div>
             </div>

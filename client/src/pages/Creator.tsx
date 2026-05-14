@@ -8,10 +8,11 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 const Creator = () => {
-    const [mode, setMode] = useState<'volume' | 'echo' | 'melody'>('volume');
+    const [mode, setMode] = useState<'volume' | 'echo' | 'melody' | 'scene'>('volume');
     const [view, setView] = useState<'list' | 'editor'>('list');
     const [books, setBooks] = useState<any[]>([]);
     const [songs, setSongs] = useState<any[]>([]);
+    const [scenes, setScenes] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [passphrase, setPassphrase] = useState(import.meta.env.VITE_CREATOR_KEY || '');
@@ -19,8 +20,9 @@ const Creator = () => {
 
     const [selectedBook, setSelectedBook] = useState<any>(null);
     const [selectedSong, setSelectedSong] = useState<any>(null);
+    const [selectedScene, setSelectedScene] = useState<any>(null);
     const [selectedChapterIndex, setSelectedChapterIndex] = useState<number | 'new'>('new');
-    const [editorContent, setEditorContent] = useState({ title: '', body: '', mood: 'Melancholic' });
+    const [editorContent, setEditorContent] = useState({ title: '', body: '', mood: 'Melancholic', imageUrl: '', instaUrl: '' });
     const [echoBody, setEchoBody] = useState('');
 
     const authHeaders = {
@@ -31,7 +33,7 @@ const Creator = () => {
         if (!passphrase.trim()) return;
         setLoading(true);
         try {
-            await axios.get(`${API_URL}/api/content/stories`, {
+            await axios.get(`${API_URL}/api/content/verify`, {
                 headers: { Authorization: `Bearer ${passphrase}` }
             });
             setIsUnlocked(true);
@@ -46,6 +48,7 @@ const Creator = () => {
         if (isUnlocked) {
             fetchBooks();
             fetchSongs();
+            fetchScenes();
         }
     }, [isUnlocked]);
 
@@ -70,6 +73,15 @@ const Creator = () => {
         }
     };
 
+    const fetchScenes = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/api/content/instagram`, authHeaders);
+            setScenes(res.data);
+        } catch (err) {
+            console.error("The scenes were hidden:", err);
+        }
+    };
+
     const handleSaveEcho = async () => {
         if (!echoBody.trim()) return;
         try {
@@ -77,8 +89,13 @@ const Creator = () => {
             await axios.post(`${API_URL}/api/content/snippet`, { body: echoBody }, authHeaders);
             alert("The echo has been recorded in the archive.");
             setEchoBody('');
-        } catch (err) {
-            alert("Failed to save the fragment.");
+        } catch (err: any) {
+            const msg = err.response?.data?.message || err.message;
+            if (msg.includes('characters')) {
+                alert("This fragment is too long for the archive's memory.");
+            } else {
+                alert("Failed to save the fragment. Check your secret passphrase.");
+            }
         } finally {
             setSaving(false);
         }
@@ -111,6 +128,25 @@ const Creator = () => {
         }
     };
 
+    const handleSaveScene = async () => {
+        if (!editorContent.title.trim() || !editorContent.imageUrl.trim()) return;
+        try {
+            setSaving(true);
+            await axios.post(`${API_URL}/api/content/instagram`, {
+                label: editorContent.title,
+                image: editorContent.imageUrl,
+                url: editorContent.instaUrl
+            }, authHeaders);
+            alert("The scene has been captured in the archive.");
+            fetchScenes();
+            setView('list');
+        } catch (err) {
+            alert("Failed to save the scene.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const chapters = useMemo(() => {
         if (!selectedBook?.body) return [];
         const parts = selectedBook.body.split(/(?=Chapter \d+:)/);
@@ -128,7 +164,8 @@ const Creator = () => {
     const handleSelectBook = (book: any) => {
         setSelectedBook(book);
         setSelectedSong(null);
-        setEditorContent({ title: book.title, body: '', mood: 'Melancholic' });
+        setSelectedScene(null);
+        setEditorContent({ title: book.title, body: '', mood: 'Melancholic', imageUrl: '', instaUrl: '' });
         setSelectedChapterIndex('new');
         setView('editor');
     };
@@ -136,14 +173,16 @@ const Creator = () => {
     const handleSelectSong = (song: any) => {
         setSelectedSong(song);
         setSelectedBook(null);
-        setEditorContent({ title: song.title, body: song.lyrics, mood: song.mood || 'Melancholic' });
+        setSelectedScene(null);
+        setEditorContent({ title: song.title, body: song.lyrics, mood: song.mood || 'Melancholic', imageUrl: '', instaUrl: '' });
         setView('editor');
     };
 
     const handleNewBook = () => {
         setSelectedBook(null);
         setSelectedSong(null);
-        setEditorContent({ title: '', body: '', mood: 'Melancholic' });
+        setSelectedScene(null);
+        setEditorContent({ title: '', body: '', mood: 'Melancholic', imageUrl: '', instaUrl: '' });
         setSelectedChapterIndex('new');
         setView('editor');
     };
@@ -151,7 +190,16 @@ const Creator = () => {
     const handleNewSong = () => {
         setSelectedBook(null);
         setSelectedSong(null);
-        setEditorContent({ title: '', body: '', mood: 'Melancholic' });
+        setSelectedScene(null);
+        setEditorContent({ title: '', body: '', mood: 'Melancholic', imageUrl: '', instaUrl: '' });
+        setView('editor');
+    };
+
+    const handleNewScene = () => {
+        setSelectedBook(null);
+        setSelectedSong(null);
+        setSelectedScene(null);
+        setEditorContent({ title: '', body: '', mood: 'Melancholic', imageUrl: '', instaUrl: '' });
         setView('editor');
     };
 
@@ -168,6 +216,7 @@ const Creator = () => {
     const handleSave = async () => {
         if (mode === 'echo') return handleSaveEcho();
         if (mode === 'melody') return handleSaveMelody();
+        if (mode === 'scene') return handleSaveScene();
 
         try {
             setSaving(true);
@@ -286,6 +335,12 @@ const Creator = () => {
                         >
                             Melodies
                         </button>
+                        <button
+                            onClick={() => { setMode('scene'); setView('list'); }}
+                            className={`px-8 py-2.5 rounded-full font-serif italic text-base transition-all duration-500 ${mode === 'scene' ? 'bg-cherry text-white shadow-editorial' : 'text-dream-purple/40 hover:text-dream-purple'}`}
+                        >
+                            Scenes
+                        </button>
                     </div>
 
                     <div className="flex items-center gap-6">
@@ -305,6 +360,15 @@ const Creator = () => {
                             >
                                 <Plus size={18} />
                                 <span className="font-serif italic text-lg">Compose Melody</span>
+                            </button>
+                        )}
+                        {mode === 'scene' && view === 'list' && (
+                            <button
+                                onClick={handleNewScene}
+                                className="group flex items-center gap-3 bg-cherry text-white px-8 py-3 rounded-full hover:shadow-editorial transition-all active:scale-95"
+                            >
+                                <Plus size={18} />
+                                <span className="font-serif italic text-lg">Add Visual Scene</span>
                             </button>
                         )}
                         {view === 'editor' && (
@@ -428,6 +492,26 @@ const Creator = () => {
                                         </div>
                                     </div>
                                 ))
+                            ) : mode === 'scene' ? (
+                                scenes.map((scene) => (
+                                    <div 
+                                        key={scene._id}
+                                        className="editorial-card group p-6 border border-cherry/5"
+                                        style={{ backgroundColor: 'var(--color-glass-bg)' }}
+                                    >
+                                        <div className="aspect-square rounded-xl overflow-hidden mb-6 relative group/img">
+                                            <img src={scene.image} alt={scene.label} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                            <div className="absolute inset-0 bg-dream-purple/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+                                                <span className="metadata-precise text-[8px] text-white uppercase tracking-widest">Active Scene</span>
+                                            </div>
+                                        </div>
+                                        <h3 className="font-serif text-xl italic text-dream-purple mb-2">{scene.label}</h3>
+                                        <div className="flex items-center justify-between text-[8px] metadata-precise text-dream-purple/40">
+                                            <span>{scene.url ? 'Linked to Insta' : 'Internal Scene'}</span>
+                                            <span className="opacity-40">{new Date(scene.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                ))
                             ) : null}
                         </motion.div>
                     ) : (
@@ -506,14 +590,39 @@ const Creator = () => {
                                         </div>
                                         <div>
                                             <span className="metadata-precise text-muted-rosegold/40 text-[9px] uppercase tracking-[0.4em] mb-4 block">
-                                                {mode === 'volume' ? 'Manuscript Content (Chapter Header + Body)' : 'Song Lyrics / Poetry'}
+                                                {mode === 'volume' ? 'Manuscript Content (Chapter Header + Body)' : mode === 'melody' ? 'Song Lyrics / Poetry' : 'Visual Scene Configuration'}
                                             </span>
-                                            <textarea
-                                                placeholder={mode === 'volume' ? "Begin writing your chapter..." : "Etch your lyrics here..."}
-                                                className="w-full bg-transparent min-h-[500px] font-serif text-xl md:text-2xl leading-[1.8] outline-none text-charcoal/80 placeholder:text-dream-purple/10 custom-scrollbar resize-none"
-                                                value={editorContent.body}
-                                                onChange={(e) => setEditorContent({ ...editorContent, body: e.target.value })}
-                                            />
+                                            {mode === 'scene' ? (
+                                                <div className="space-y-8">
+                                                    <div className="space-y-3">
+                                                        <label className="metadata-precise text-[8px] text-muted-rosegold uppercase">Direct Image URL (Unsplash, etc.)</label>
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="https://images.unsplash.com/photo..."
+                                                            className="w-full bg-transparent border-b border-dream-purple/10 py-3 font-serif italic text-xl outline-none text-dream-purple"
+                                                            value={editorContent.imageUrl}
+                                                            onChange={(e) => setEditorContent({ ...editorContent, imageUrl: e.target.value })}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <label className="metadata-precise text-[8px] text-muted-rosegold uppercase">Instagram URL (Optional)</label>
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="https://www.instagram.com/p/..."
+                                                            className="w-full bg-transparent border-b border-dream-purple/10 py-3 font-serif italic text-xl outline-none text-dream-purple"
+                                                            value={editorContent.instaUrl}
+                                                            onChange={(e) => setEditorContent({ ...editorContent, instaUrl: e.target.value })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <textarea
+                                                    placeholder={mode === 'volume' ? "Begin writing your chapter..." : "Etch your lyrics here..."}
+                                                    className="w-full bg-transparent min-h-[500px] font-serif text-xl md:text-2xl leading-[1.8] outline-none text-charcoal/80 placeholder:text-dream-purple/10 custom-scrollbar resize-none"
+                                                    value={editorContent.body}
+                                                    onChange={(e) => setEditorContent({ ...editorContent, body: e.target.value })}
+                                                />
+                                            )}
                                         </div>
                                         <div className="pt-12 border-t border-dream-purple/5 flex justify-between items-center">
                                             <div className="flex items-center gap-4 text-muted-rosegold/40">
@@ -527,7 +636,7 @@ const Creator = () => {
                                             >
                                                 {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                                                 <span className="font-serif italic text-xl">
-                                                    {mode === 'melody' ? 'Save Melody' : 'Save to Bookshelf'}
+                                                    {mode === 'melody' ? 'Save Melody' : mode === 'scene' ? 'Capture Scene' : 'Save to Bookshelf'}
                                                 </span>
                                             </button>
                                         </div>

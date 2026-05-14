@@ -183,3 +183,114 @@ export const inquiryTemplate = (name, email, message, source) => `
 </body>
 </html>
 `;
+
+export const broadcastTemplate = (type, title, summary, link) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; padding: 0; background-color: ${COLORS.offWhite}; }
+        .container { 
+            max-width: 600px; 
+            margin: 40px auto; 
+            background: white; 
+            border: 1px solid rgba(107, 78, 113, 0.1);
+            padding: 60px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.02);
+        }
+        .header { text-align: center; margin-bottom: 50px; }
+        .metadata { 
+            font-family: sans-serif; 
+            font-size: 8px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5em; 
+            color: ${COLORS.rosegold};
+            margin-bottom: 20px;
+            display: block;
+        }
+        .type-label {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: ${COLORS.purple}10;
+            color: ${COLORS.purple};
+            font-family: sans-serif;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .title { 
+            font-family: Georgia, serif; 
+            font-size: 32px; 
+            font-style: italic; 
+            color: ${COLORS.purple}; 
+            margin: 0;
+            line-height: 1.2;
+        }
+        .content { 
+            font-family: Georgia, serif; 
+            font-size: 18px; 
+            color: ${COLORS.charcoal}; 
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+        .summary {
+            font-style: italic;
+            border-left: 2px solid ${COLORS.rosegold}30;
+            padding-left: 20px;
+            margin: 30px 0;
+            color: ${COLORS.charcoal}90;
+        }
+        .footer { 
+            border-top: 1px solid rgba(107, 78, 113, 0.05);
+            padding-top: 30px;
+            text-align: center;
+        }
+        .feather {
+            font-size: 24px;
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: ${COLORS.purple};
+            color: white !important;
+            text-decoration: none;
+            border-radius: 50px;
+            font-family: serif;
+            font-style: italic;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="metadata">A New Fragment Has Surfaced</span>
+            <div class="type-label">${type}</div>
+            <h1 class="title">${title}</h1>
+        </div>
+        
+        <div class="content">
+            <p>The archive has expanded. A new piece of narrative has been etched into the collection, and as a subscriber, you are among the first to witness it.</p>
+            
+            <div class="summary">
+                "${summary}"
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="${link || 'https://bhargavi-portfolio.vercel.app'}" class="button">Read the Full Echo</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="feather">🪶</div>
+            <span class="metadata" style="letter-spacing: 0.2em; font-size: 7px;">Bhargavi &mdash; Writer & Storyteller</span>
+        </div>
+    </div>
+</body>
+</html>
+`;

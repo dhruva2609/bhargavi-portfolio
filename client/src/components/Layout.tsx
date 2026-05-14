@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Sparkles, Music } from 'lucide-react';
+import { Home, BookOpen, PenTool, Sparkles, Music, Mail } from 'lucide-react';
 import { InstagramIcon } from './InstagramPost';
 import { useMotionValue, useSpring, useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import Scene3D from './Scene3D';
@@ -154,32 +154,96 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             {/* ── Main Content ── */}
             <main>{children}</main>
 
-            {/* ── Minimal Footer ── */}
-            <footer className="relative z-10 py-10 md:py-12 border-t border-dream-purple/5 bg-white overflow-hidden">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
-                    <div className="flex flex-col items-center md:items-start gap-4">
-                        <p className="metadata-precise text-[10px] md:text-[11px] tracking-[0.4em] text-charcoal/40 uppercase">
-                            © 2026 Bhargavi
-                        </p>
-                        <p className="font-serif italic text-dream-purple/30 text-sm">
-                            Fragments of a Narrative Archive
-                        </p>
+            {/* ── Professional Editorial Footer ── */}
+            <footer className="relative z-10 pt-20 pb-12 bg-white/40 backdrop-blur-md border-t border-dream-purple/5 overflow-hidden">
+                {/* ── Background Watermark ── */}
+                <div className="absolute -bottom-10 -right-10 opacity-[0.03] pointer-events-none select-none">
+                    <h2 className="text-[20rem] font-serif italic text-dream-purple leading-none">B</h2>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 lg:px-12">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-0 mb-16">
+                        {/* ── Brand Identity ── */}
+                        <div className="flex flex-col gap-6 max-w-sm">
+                            <Link to="/" className="inline-block group">
+                                <h2 className="font-serif italic text-4xl text-dream-purple group-hover:text-cherry transition-colors duration-500">Bhargavi</h2>
+                            </Link>
+                            <p className="font-serif italic text-charcoal/50 text-sm leading-relaxed">
+                                A sanctuary of digital fragments, where narrative meets archival elegance. Each story is an etched memory within the sanctuary of the midnight ink.
+                            </p>
+                            <div className="flex items-center gap-4 mt-2">
+                                <a 
+                                    href="https://instagram.com" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="w-10 h-10 rounded-full border border-dream-purple/10 flex items-center justify-center text-dream-purple/40 hover:text-cherry hover:border-cherry/30 hover:scale-110 transition-all duration-500 group"
+                                    title="Instagram"
+                                >
+                                    <InstagramIcon size={16} />
+                                </a>
+                                <a 
+                                    href="mailto:hello@bhargavi.com" 
+                                    className="w-10 h-10 rounded-full border border-dream-purple/10 flex items-center justify-center text-dream-purple/40 hover:text-cherry hover:border-cherry/30 hover:scale-110 transition-all duration-500 group"
+                                    title="Email Me"
+                                >
+                                    <Mail size={16} />
+                                </a>
+                                <div className="h-[1px] w-8 bg-dream-purple/10" />
+                                <span className="metadata-precise text-[8px] text-dream-purple/30 uppercase tracking-[0.2em]">Contact</span>
+                            </div>
+                        </div>
+
+                        {/* ── The Archive (Links) ── */}
+                        <div className="flex flex-col gap-8 min-w-[200px]">
+                            <h4 className="metadata-precise text-[10px] text-dream-purple/60 tracking-[0.4em] uppercase">The Archive</h4>
+                            <ul className="flex flex-col gap-4">
+                                {navLinks.map((link) => (
+                                    <li key={link.path}>
+                                        <Link 
+                                            to={link.path}
+                                            className="font-serif italic text-charcoal/40 hover:text-cherry text-base transition-colors duration-500 flex items-center gap-2 group"
+                                        >
+                                            <span className="w-0 group-hover:w-4 h-[1px] bg-cherry transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                                <li>
+                                    <a href="#subscribe" className="font-serif italic text-charcoal/40 hover:text-cherry text-base transition-colors duration-500 flex items-center gap-2 group">
+                                        <span className="w-0 group-hover:w-4 h-[1px] bg-cherry transition-all duration-500 opacity-0 group-hover:opacity-100" />
+                                        Bulletin
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div className="flex items-center gap-12">
-                        <a 
-                            href="https://instagram.com" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="hover:text-cherry transition-all duration-500 flex items-center gap-3 group"
-                        >
-                            <InstagramIcon size={16} className="group-hover:scale-110 group-hover:text-cherry transition-all" />
-                            <span className="metadata-precise text-[10px] md:text-[11px] tracking-[0.4em] text-charcoal/40 uppercase group-hover:text-cherry">Instagram</span>
-                        </a>
-                        <div className="h-8 w-[1px] bg-dream-purple/5 hidden md:block" />
-                        <span className="metadata-precise text-[9px] text-muted-rosegold/30 uppercase tracking-widest hidden md:block">
-                            Editorial Grade
-                        </span>
+                    {/* ── Footer Bottom ── */}
+                    <div className="pt-8 border-t border-dream-purple/5 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-6">
+                            <p className="metadata-precise text-[10px] text-charcoal/30 uppercase">
+                                © 2026 Bhargavi
+                            </p>
+                            <div className="h-4 w-[1px] bg-dream-purple/10" />
+                            <p className="metadata-precise text-[8px] text-charcoal/20 uppercase tracking-[0.3em]">
+                                All Fragments Reserved
+                            </p>
+                        </div>
+
+                        <div className="flex items-center gap-8">
+                            <span className="metadata-precise text-[9px] text-muted-rosegold/40 uppercase tracking-widest px-3 py-1 border border-muted-rosegold/10 rounded-full">
+                                Editorial Grade
+                            </span>
+                            <button 
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                                className="group flex items-center gap-2 metadata-precise text-[8px] text-charcoal/30 hover:text-cherry transition-colors"
+                            >
+                                Back to top
+                                <div className="w-6 h-6 rounded-full border border-dream-purple/5 flex items-center justify-center group-hover:border-cherry/20 transition-all">
+                                    <span className="mb-0.5 group-hover:-translate-y-0.5 transition-transform">↑</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </footer>
