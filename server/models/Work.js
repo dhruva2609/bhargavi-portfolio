@@ -8,7 +8,7 @@ const workSchema = new mongoose.Schema(
     coverImage: { type: String, default: '' },
     synopsis: { type: String, trim: true },
     readTime: { type: Number, default: 3 },
-    likes: { type: Number, default: 0 },
+    likes: { type: Number, default: 0, min: 0 },
     publishedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

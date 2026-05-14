@@ -54,11 +54,12 @@ const Reader: React.FC = () => {
     }, [slug]);
 
     const handleLike = async () => {
-        if (isLiked) return;
         try {
-            const res = await axios.post(`${API_URL}/api/content/stories/${work._id}/like`);
+            const res = await axios.post(`${API_URL}/api/content/stories/${work._id}/like`, {
+                unlike: isLiked
+            });
             setLikes(res.data.likes);
-            setIsLiked(true);
+            setIsLiked(!isLiked);
         } catch (err) {
             console.error("Could not echo your appreciation:", err);
         }
@@ -99,6 +100,19 @@ const Reader: React.FC = () => {
         </div>
     );
 
+    if (!work) return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-off-white px-6 text-center">
+            <span className="metadata-precise text-muted-rosegold text-[10px] tracking-[0.8em] uppercase mb-8">The Page is Blank</span>
+            <h1 className="font-serif text-4xl italic text-dream-purple mb-8">This narrative has been lost to the archive.</h1>
+            <button 
+                onClick={() => navigate('/muse')}
+                className="btn-editorial"
+            >
+                Return to the Bookshelf
+            </button>
+        </div>
+    );
+
     return (
         <div className="min-h-screen book-container flex flex-col items-center justify-center overflow-hidden p-6 md:p-12 relative bg-[#FAF9F6]">
             {/* Premium Texture Overlay — inline SVG, zero network requests */}
@@ -132,8 +146,8 @@ const Reader: React.FC = () => {
                             onClick={handleLike}
                             className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-500 ${isLiked ? 'text-cherry bg-cherry/5' : 'text-dream-purple/30 hover:text-cherry hover:bg-cherry/5'}`}
                         >
-                            <Heart size={16} className={isLiked ? 'fill-cherry' : ''} />
-                            <span className="metadata-precise text-[10px]">{likes}</span>
+                            <Heart size={22} className={isLiked ? 'fill-cherry' : ''} />
+                            <span className="metadata-precise text-[12px]">{likes}</span>
                         </button>
                         <BookOpen size={18} className="text-dream-purple/20 hidden md:block" />
                     </div>

@@ -15,7 +15,7 @@ const Creator = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [passphrase, setPassphrase] = useState(import.meta.env.VITE_CREATOR_KEY || '');
-    const [isUnlocked, setIsUnlocked] = useState(!!import.meta.env.VITE_CREATOR_KEY);
+    const [isUnlocked, setIsUnlocked] = useState(false);
 
     const [selectedBook, setSelectedBook] = useState<any>(null);
     const [selectedSong, setSelectedSong] = useState<any>(null);
@@ -25,6 +25,21 @@ const Creator = () => {
 
     const authHeaders = {
         headers: { Authorization: `Bearer ${passphrase}` }
+    };
+
+    const handleUnlock = async () => {
+        if (!passphrase.trim()) return;
+        setLoading(true);
+        try {
+            await axios.get(`${API_URL}/api/content/stories`, {
+                headers: { Authorization: `Bearer ${passphrase}` }
+            });
+            setIsUnlocked(true);
+        } catch (err) {
+            alert("The secret is incorrect. The vault remains sealed.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -223,13 +238,14 @@ const Creator = () => {
                         className="w-full bg-transparent border-b border-dream-purple/10 py-4 text-center font-serif text-2xl outline-none placeholder:text-dream-purple/5 text-dream-purple"
                         value={passphrase}
                         onChange={(e) => setPassphrase(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && setIsUnlocked(true)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
                     />
                     <button
-                        onClick={() => setIsUnlocked(true)}
-                        className="w-full bg-dream-purple text-white py-4 rounded-full font-serif italic text-lg hover:shadow-editorial transition-all active:scale-95"
+                        onClick={handleUnlock}
+                        disabled={loading}
+                        className="w-full bg-dream-purple text-white py-4 rounded-full font-serif italic text-lg hover:shadow-editorial transition-all active:scale-95 disabled:opacity-50"
                     >
-                        Unlock Studio
+                        {loading ? "Verifying..." : "Unlock Studio"}
                     </button>
                 </motion.div>
             </div>

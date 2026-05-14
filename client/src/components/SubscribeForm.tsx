@@ -63,7 +63,7 @@ const SubscribeForm: React.FC<SubscribeFormProps> = ({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="editorial-card p-8 md:p-12 max-w-2xl mx-auto bg-white/40 backdrop-blur-md relative overflow-hidden"
+            className="editorial-card p-8 md:p-12 max-w-2xl mx-auto bg-[#fffafa] shadow-editorial relative overflow-hidden"
         >
             {/* Background decoration */}
             <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
@@ -81,7 +81,7 @@ const SubscribeForm: React.FC<SubscribeFormProps> = ({
 
                 <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
                     <div className="space-y-2">
-                        <label htmlFor="sub-email" className="metadata-precise text-[8px] uppercase tracking-widest text-dream-purple/40 ml-1">Your Email</label>
+                        <label htmlFor="sub-email" className="metadata-precise text-[10px] uppercase tracking-[0.3em] text-dream-purple/60 ml-1">Your Email</label>
                         <div className="relative">
                             <input
                                 id="sub-email"
@@ -89,7 +89,7 @@ const SubscribeForm: React.FC<SubscribeFormProps> = ({
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-transparent border-b border-dream-purple/10 py-3 px-1 font-serif italic text-charcoal focus:border-cherry focus:outline-none transition-colors duration-500 placeholder:text-charcoal/10"
+                                className="w-full bg-transparent border-b border-dream-purple/10 py-4 px-1 font-serif italic text-charcoal text-lg md:text-xl focus:border-cherry focus:outline-none transition-colors duration-500 placeholder:text-charcoal/10"
                                 placeholder="Where shall I send the echoes?"
                             />
                         </div>
@@ -104,26 +104,26 @@ const SubscribeForm: React.FC<SubscribeFormProps> = ({
                                 className="overflow-hidden space-y-6 pt-4"
                             >
                                 <div className="space-y-2">
-                                    <label htmlFor="sub-name" className="metadata-precise text-[8px] uppercase tracking-widest text-dream-purple/40 ml-1">Your Name</label>
+                                    <label htmlFor="sub-name" className="metadata-precise text-[10px] uppercase tracking-[0.3em] text-dream-purple/60 ml-1">Your Name</label>
                                     <input
                                         id="sub-name"
                                         type="text"
                                         required={showContactFields}
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        className="w-full bg-transparent border-b border-dream-purple/10 py-3 px-1 font-serif italic text-charcoal focus:border-cherry focus:outline-none transition-colors duration-500 placeholder:text-charcoal/10"
+                                        className="w-full bg-transparent border-b border-dream-purple/10 py-4 px-1 font-serif italic text-charcoal text-lg md:text-xl focus:border-cherry focus:outline-none transition-colors duration-500 placeholder:text-charcoal/10"
                                         placeholder="How shall I address you?"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="sub-message" className="metadata-precise text-[8px] uppercase tracking-widest text-dream-purple/40 ml-1">Message</label>
+                                    <label htmlFor="sub-message" className="metadata-precise text-[10px] uppercase tracking-[0.3em] text-dream-purple/60 ml-1">Message</label>
                                     <textarea
                                         id="sub-message"
                                         required={showContactFields}
                                         rows={3}
                                         value={message}
                                         onChange={(e) => setMessage(e.target.value)}
-                                        className="w-full bg-transparent border-b border-dream-purple/10 py-3 px-1 font-serif italic text-charcoal focus:border-cherry focus:outline-none transition-colors duration-500 placeholder:text-charcoal/10 resize-none"
+                                        className="w-full bg-transparent border-b border-dream-purple/10 py-4 px-1 font-serif italic text-charcoal text-lg md:text-xl focus:border-cherry focus:outline-none transition-colors duration-500 placeholder:text-charcoal/10 resize-none"
                                         placeholder="Speak your mind..."
                                     />
                                 </div>
@@ -138,11 +138,11 @@ const SubscribeForm: React.FC<SubscribeFormProps> = ({
                                 id="toggle-contact"
                                 checked={showContactFields}
                                 onChange={(e) => setShowContactFields(e.target.checked)}
-                                className="accent-cherry"
+                                className="accent-cherry w-4 h-4"
                             />
-                            <label htmlFor="toggle-contact" className="metadata-precise text-[8px] uppercase tracking-widest text-dream-purple/50 cursor-pointer">
-                                Also leave a personal message
-                            </label>
+                                <label htmlFor="toggle-contact" className="metadata-precise text-[10px] uppercase tracking-[0.3em] text-dream-purple/60 cursor-pointer">
+                                    Also leave a personal message
+                                </label>
                         </div>
 
                         <button

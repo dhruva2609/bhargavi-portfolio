@@ -57,9 +57,14 @@ router.post('/snippet', isCreator, asyncHandler(async (req, res) => {
 }));
 
 router.post('/snippets/:id/like', asyncHandler(async (req, res) => {
-    const updated = await Feed.findByIdAndUpdate(
-        req.params.id,
-        { $inc: { likes: 1 } },
+    const isUnlike = req.body.unlike === true;
+    const increment = isUnlike ? -1 : 1;
+    const query = { _id: req.params.id };
+    if (isUnlike) query.likes = { $gt: 0 };
+
+    const updated = await Feed.findOneAndUpdate(
+        query,
+        { $inc: { likes: increment } },
         { new: true }
     );
     if (!updated) return res.status(404).json({ message: 'The echo was not found.' });
@@ -115,9 +120,14 @@ router.put('/stories/:id', isCreator, asyncHandler(async (req, res) => {
 }));
 
 router.post('/stories/:id/like', asyncHandler(async (req, res) => {
-  const updated = await Work.findByIdAndUpdate(
-    req.params.id,
-    { $inc: { likes: 1 } },
+  const isUnlike = req.body.unlike === true;
+  const increment = isUnlike ? -1 : 1;
+  const query = { _id: req.params.id };
+  if (isUnlike) query.likes = { $gt: 0 };
+
+  const updated = await Work.findOneAndUpdate(
+    query,
+    { $inc: { likes: increment } },
     { new: true }
   );
   if (!updated) return res.status(404).json({ message: 'The narrative was not found.' });
@@ -242,9 +252,14 @@ router.put('/songs/:id', isCreator, asyncHandler(async (req, res) => {
 }));
 
 router.post('/songs/:id/like', asyncHandler(async (req, res) => {
-    const updated = await Song.findByIdAndUpdate(
-        req.params.id,
-        { $inc: { likes: 1 } },
+    const isUnlike = req.body.unlike === true;
+    const increment = isUnlike ? -1 : 1;
+    const query = { _id: req.params.id };
+    if (isUnlike) query.likes = { $gt: 0 };
+
+    const updated = await Song.findOneAndUpdate(
+        query,
+        { $inc: { likes: increment } },
         { new: true }
     );
     if (!updated) return res.status(404).json({ message: 'The melody was not found.' });

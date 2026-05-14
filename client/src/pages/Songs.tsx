@@ -25,11 +25,12 @@ const SongCard = ({ song, onClick, index }: { song: any; onClick: () => void; in
 
     const handleLike = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (isLiked) return;
         try {
-            const res = await axios.post(`${API_URL}/api/content/songs/${song._id}/like`);
+            const res = await axios.post(`${API_URL}/api/content/songs/${song._id}/like`, {
+                unlike: isLiked
+            });
             setLikes(res.data.likes);
-            setIsLiked(true);
+            setIsLiked(!isLiked);
         } catch (err) {
             console.error("The melody remains unshared:", err);
         }
@@ -67,10 +68,10 @@ const SongCard = ({ song, onClick, index }: { song: any; onClick: () => void; in
                             className="text-dream-purple/20 hover:text-cherry transition-colors duration-300 active:scale-95 flex items-center gap-1 group/heart"
                         >
                             <Heart
-                                size={14}
+                                size={19}
                                 className={isLiked ? 'fill-cherry text-cherry' : ''}
                             />
-                            <span className="metadata-precise text-[7px]">{likes}</span>
+                            <span className="metadata-precise text-[9px]">{likes}</span>
                         </button>
                         <span className="metadata-precise text-[7px] text-muted-rosegold/30">
                             {new Date(song.publishedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}

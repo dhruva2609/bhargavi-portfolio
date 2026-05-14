@@ -12,11 +12,13 @@ const SnippetCard = ({ id, content, date, initialLikes }: { id: string; content:
 
     const handleLike = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (isLiked || !id) return;
+        if (!id) return;
         try {
-            const res = await axios.post(`${API_URL}/api/content/snippets/${id}/like`);
+            const res = await axios.post(`${API_URL}/api/content/snippets/${id}/like`, { 
+                unlike: isLiked 
+            });
             setLikes(res.data.likes);
-            setIsLiked(true);
+            setIsLiked(!isLiked);
         } catch (err) {
             console.error("The echo remains unappreciated:", err);
         }
@@ -57,10 +59,10 @@ const SnippetCard = ({ id, content, date, initialLikes }: { id: string; content:
                         aria-label="Like this snippet"
                     >
                         <Heart
-                            size={13}
+                            size={22}
                             className={`transition-all duration-300 ${isLiked ? 'fill-cherry text-cherry scale-110' : ''}`}
                         />
-                        <span className="metadata-precise text-[8px]">{likes}</span>
+                        <span className="metadata-precise text-[12px]">{likes}</span>
                     </button>
                 </div>
             </div>

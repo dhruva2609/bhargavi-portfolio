@@ -42,11 +42,12 @@ const BookCard = ({ story, index }: { story: any; index: number }) => {
     const handleLike = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (isLiked) return;
         try {
-            const res = await axios.post(`${API_URL}/api/content/stories/${story._id}/like`);
+            const res = await axios.post(`${API_URL}/api/content/stories/${story._id}/like`, {
+                unlike: isLiked
+            });
             setLikes(res.data.likes);
-            setIsLiked(true);
+            setIsLiked(!isLiked);
         } catch (err) {
             console.error("The bookshelf remains unmoved:", err);
         }
@@ -100,8 +101,8 @@ const BookCard = ({ story, index }: { story: any; index: number }) => {
                             onClick={handleLike}
                             className={`flex items-center gap-1 group/like ${isLiked ? 'text-cherry' : 'text-dream-purple/40 hover:text-cherry'} transition-colors duration-300`}
                         >
-                            <Heart size={10} className={isLiked ? 'fill-cherry' : ''} />
-                            <span className="text-[7px] metadata-precise">{likes}</span>
+                            <Heart size={18} className={isLiked ? 'fill-cherry' : ''} />
+                            <span className="text-[9px] metadata-precise">{likes}</span>
                         </button>
                         <div className="flex items-center gap-1">
                             <span className="metadata-precise text-dream-purple/40 text-[7px]">Read Fragment</span>

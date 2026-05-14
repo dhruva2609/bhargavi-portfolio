@@ -185,16 +185,10 @@ const Landing = () => {
                             transition={{ duration: 1.2, delay: 0.9, ease: editorialEase }}
                             className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
                         >
-                            <a href="/muse" className="btn-editorial">
-                                <span>Enter the Muse</span> <ArrowRight size={12} />
-                            </a>
-                            <Link
-                                to="/muse#subscribe"
-                                className="metadata-precise text-[9px] text-dream-purple/35 hover:text-cherry transition-colors duration-300 flex items-center gap-2"
-                            >
-                                <Feather size={12} /> Subscribe
-                            </Link>
-                        </motion.div>
+                             <a href="/muse" className="btn-editorial">
+                                 <span>Enter the Muse</span> <ArrowRight size={12} />
+                             </a>
+                         </motion.div>
                     </motion.div>
 
                     {/* Right: Rose Pen */}
@@ -323,7 +317,7 @@ const Landing = () => {
                                     key={post._id || idx}
                                     id={post._id}
                                     content={post.content || post.body}
-                                    date={post.date || new Date(post.createdAt).toLocaleDateString()}
+                                    date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently'}
                                     initialLikes={post.likes || 0}
                                 />
                             ))
@@ -468,15 +462,15 @@ const Landing = () => {
                             <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 rounded-full" />
                         </a>
 
-                        <Link
-                            to="/muse#subscribe"
+                        <a
+                            href="mailto:dhruvapandya86@gmail.com"
                             className="group relative inline-flex items-center gap-3 px-8 md:px-14 py-4 md:py-5 border-2 border-dream-pink/10 hover:border-dream-pink/40 rounded-full transition-all duration-700 overflow-hidden"
                         >
                             <span className="relative z-10 metadata-precise text-[9px] md:text-[10px] text-dream-pink/50 group-hover:text-dream-purple transition-colors">
-                                Subscribe
+                                Collaborate
                             </span>
                             <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-right transition-transform duration-700 rounded-full" />
-                        </Link>
+                        </a>
                     </motion.div>
 
                     {/* Decorative sparkles */}

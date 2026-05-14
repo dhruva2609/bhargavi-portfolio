@@ -9,7 +9,7 @@ const feedSchema = new mongoose.Schema(
       trim: true 
     },
     type: { type: String, default: 'Snippet' },
-    likes: { type: Number, default: 0 },
+    likes: { type: Number, default: 0, min: 0 },
     date: { type: Date, default: Date.now }
   },
   { timestamps: true }

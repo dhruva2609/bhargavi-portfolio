@@ -28,10 +28,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 const LenisModule = await import('lenis');
                 const LenisConstructor = (LenisModule as any).default || LenisModule;
                 lenis = new LenisConstructor({
-                    duration: 1.5,
+                    duration: 2.2,
                     easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                    touchMultiplier: 1.8,
+                    touchMultiplier: 2,
                     smoothTouch: false,
+                    infinite: false,
                 });
                 function raf(time: number) {
                     if (lenis) lenis.raf(time);
@@ -154,20 +155,33 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <main>{children}</main>
 
             {/* ── Minimal Footer ── */}
-            <footer className="relative z-10 h-[50px] border-t border-dream-purple/5 bg-off-white/80 backdrop-blur-sm flex items-center justify-center overflow-hidden">
-                <p className="metadata-precise text-[8px] tracking-[0.3em] text-charcoal/30 uppercase flex items-center gap-4">
-                    © 2026 Bhargavi — Editorial Archive
-                    <span className="w-4 h-[1px] bg-charcoal/10" />
-                    <a 
-                        href="https://instagram.com" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="hover:text-cherry transition-colors duration-500 flex items-center gap-1.5 group"
-                    >
-                        <InstagramIcon size={10} className="group-hover:scale-110 transition-transform" />
-                        <span className="tracking-[0.4em]">Follow</span>
-                    </a>
-                </p>
+            <footer className="relative z-10 py-10 md:py-12 border-t border-dream-purple/5 bg-white overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0">
+                    <div className="flex flex-col items-center md:items-start gap-4">
+                        <p className="metadata-precise text-[10px] md:text-[11px] tracking-[0.4em] text-charcoal/40 uppercase">
+                            © 2026 Bhargavi
+                        </p>
+                        <p className="font-serif italic text-dream-purple/30 text-sm">
+                            Fragments of a Narrative Archive
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-12">
+                        <a 
+                            href="https://instagram.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="hover:text-cherry transition-all duration-500 flex items-center gap-3 group"
+                        >
+                            <InstagramIcon size={16} className="group-hover:scale-110 group-hover:text-cherry transition-all" />
+                            <span className="metadata-precise text-[10px] md:text-[11px] tracking-[0.4em] text-charcoal/40 uppercase group-hover:text-cherry">Instagram</span>
+                        </a>
+                        <div className="h-8 w-[1px] bg-dream-purple/5 hidden md:block" />
+                        <span className="metadata-precise text-[9px] text-muted-rosegold/30 uppercase tracking-widest hidden md:block">
+                            Editorial Grade
+                        </span>
+                    </div>
+                </div>
             </footer>
         </div>
     );
