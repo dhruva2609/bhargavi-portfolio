@@ -3,7 +3,7 @@ import { motion, useScroll, useSpring, useTransform, useMotionValue, AnimatePres
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowRight, BookOpen, Heart } from 'lucide-react';
-import typewriterSvg from '../assets/typewriter.svg';
+import typewriterSvg from '../assets/violettypewriter.svg';
 import featherSvg from '../assets/Feather.svg';
 import SubscribeForm from '../components/SubscribeForm';
 
@@ -97,7 +97,7 @@ const BookCard = ({ story, index }: { story: any; index: number }) => {
                         transition={{ duration: 0.3 }}
                         className="absolute -bottom-10 left-0 right-0 flex items-center justify-between px-2"
                     >
-                        <button 
+                        <button
                             onClick={handleLike}
                             className={`flex items-center gap-1 group/like ${isLiked ? 'text-cherry' : 'text-dream-purple/40 hover:text-cherry'} transition-colors duration-300`}
                         >
@@ -123,11 +123,11 @@ const Muse = () => {
     const [isMobile, setIsMobile] = useState(false);
 
     const watermarkOpacity = useTransform(scrollYProgress, [0, 0.15], [0.06, 0]);
-    const textOpacity      = useTransform(scrollYProgress, [0, 0.3],  [1, 0.9]);
+    const textOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.9]);
 
-    const mouseX      = useMotionValue(0);
+    const mouseX = useMotionValue(0);
     const smoothMouseX = useSpring(mouseX, { stiffness: 40, damping: 20 });
-    const parallaxX1  = useTransform(smoothMouseX, [-1, 1], [-16, 16]);
+    const parallaxX1 = useTransform(smoothMouseX, [-1, 1], [-16, 16]);
 
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768);
@@ -280,7 +280,7 @@ const Muse = () => {
 
                     {loading ? (
                         <div className="archive-grid">
-                            {[1,2,3,4].map(i => (
+                            {[1, 2, 3, 4].map(i => (
                                 <div key={i} className="shimmer h-[320px] md:h-[400px] w-full max-w-[280px] mx-auto rounded-lg" />
                             ))}
                         </div>
@@ -293,11 +293,11 @@ const Muse = () => {
                     )}
                 </div>
             </section>
-            
+
             {/* ── Subscribe Form ── */}
             <section className="relative z-10 px-6 py-16 md:py-32">
-                <SubscribeForm 
-                    source="Archive Muse" 
+                <SubscribeForm
+                    source="Archive Muse"
                     title="The Midnight Bulletin"
                     subtitle="Subscribe to receive a fragment of the narrative whenever a new story is etched into the archive."
                 />
