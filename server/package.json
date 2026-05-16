@@ -5,7 +5,6 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "install": "npm install",
     "build": "echo 'No compilation needed for backend'",
     "start": "node index.js",
     "dev": "nodemon index.js"
