@@ -42,15 +42,22 @@ app.use(helmet({
 // 2. Strict Production CORS
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  process.env.PRODUCTION_URL, // Render URL (private via .env)
   'https://bhargavi-portfolio-nine.vercel.app',
+  'https://bhargavi-portfolio-dhruva-pandyas-projects.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173'
-].filter(Boolean).map(url => url.replace(/\/$/, "")); // Remove trailing slashes
+].filter(Boolean).map(url => url.replace(/\/$/, ""));
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl) or allowed origins
-    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+    
+    const sanitizedOrigin = origin.replace(/\/$/, "");
+    
+    // Checks if the origin matches our list OR ends with .vercel.app to capture previews
+    if (allowedOrigins.includes(sanitizedOrigin) || sanitizedOrigin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
       console.warn(`CORS blocked for origin: ${origin}`);
