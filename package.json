@@ -6,8 +6,9 @@
   "scripts": {
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "build-client": "cd client && npm run build",
+    "build": "npm run install-all && npm run build-client",
     "start": "cd server && npm start",
-    "production": "npm run build-client && npm start",
+    "production": "npm run build && npm start",
     "healthcheck": "node scripts/healthcheck.js"
   }
 }

@@ -11,7 +11,7 @@ import {
     ResponsiveContainer, AreaChart, Area 
 } from 'recharts';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const Dashboard = () => {
     const [passphrase, setPassphrase] = useState(import.meta.env.VITE_CREATOR_KEY || '');
