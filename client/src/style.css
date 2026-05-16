@@ -155,7 +155,7 @@
     overflow: hidden;
     transition: all 0.8s var(--ease-editorial);
     transform: translateZ(0);
-    will-change: transform, box-shadow;
+    will-change: transform, box-shadow, opacity;
   }
 
   .editorial-card:hover {
@@ -527,6 +527,9 @@
   }
   .morph-blob {
     animation: morph-blob 8s ease-in-out infinite;
+    transform: translateZ(0);
+    will-change: border-radius, transform;
+    backface-visibility: hidden;
   }
 
   /* ── Page turn button ── */

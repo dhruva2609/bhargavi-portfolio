@@ -22,7 +22,7 @@ const Dashboard = () => {
     const [timeRange, setTimeRange] = useState<'week' | 'month' | 'halfYear' | 'year'>('week');
     
     // Broadcast Form State
-    const [broadcast, setBroadcast] = useState({ title: '', summary: '', body: '', link: '' });
+    const [broadcast, setBroadcast] = useState({ title: '', summary: '', body: '', link: 'https://bhargavi-portfolio.vercel.app' });
     const [sendingBroadcast, setSendingBroadcast] = useState(false);
 
     const handleUnlock = async () => {

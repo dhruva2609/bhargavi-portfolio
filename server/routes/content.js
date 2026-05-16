@@ -56,10 +56,16 @@ const broadcastUpdate = async (type, title, summary, link) => {
     }
 };
 
-// Simple Newsletter Schema (in-memory or ad-hoc for this demo)
 const Subscriber = mongoose.models.Subscriber || mongoose.model('Subscriber', new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     joinedAt: { type: Date, default: Date.now }
+}));
+
+// Real Traffic Tracking Schema
+const Traffic = mongoose.models.Traffic || mongoose.model('Traffic', new mongoose.Schema({
+    path: { type: String, default: '/' },
+    timestamp: { type: Date, default: Date.now },
+    userAgent: String
 }));
 
 const router = express.Router();
@@ -83,6 +89,16 @@ router.get('/verify', isCreator, (req, res) => {
   res.json({ message: "Welcome, Creator." });
 });
 
+// Real Traffic Tracking Endpoint
+router.post('/track', asyncHandler(async (req, res) => {
+    const { path } = req.body;
+    await Traffic.create({ 
+        path: path || '/', 
+        userAgent: req.headers['user-agent'] 
+    });
+    res.sendStatus(200);
+}));
+
 // Dashboard Stats
 router.get('/stats', isCreator, asyncHandler(async (req, res) => {
     const subscribers = await Subscriber.find().sort({ joinedAt: -1 });
@@ -97,13 +113,46 @@ router.get('/stats', isCreator, asyncHandler(async (req, res) => {
     const songLikes = songs.reduce((sum, s) => sum + (s.likes || 0), 0);
     const snippetLikes = snippets.reduce((sum, s) => sum + (s.likes || 0), 0);
     
-    const views = {
-        works: workLikes * 12 + 150,
-        songs: songLikes * 8 + 80,
-        snippets: snippetLikes * 5 + 40,
-        home: 1250
+    // Real Traffic Stats
+    const allTraffic = await Traffic.find();
+    const totalViews = allTraffic.length;
+
+    // Aggregate Traffic History for Graph
+    const getHistoryData = (days) => {
+        const historyMap = {};
+        const now = new Date();
+        
+        // Initialize empty days
+        for (let i = 0; i < days; i++) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            historyMap[dateStr] = 0;
+        }
+
+        // Fill with real data
+        allTraffic.forEach(t => {
+            const dateStr = new Date(t.timestamp).toISOString().split('T')[0];
+            if (historyMap[dateStr] !== undefined) {
+                historyMap[dateStr]++;
+            }
+        });
+
+        return Object.keys(historyMap)
+            .sort()
+            .map(date => ({ date, views: historyMap[date] }));
     };
 
+    const views = {
+        total: totalViews,
+        today: allTraffic.filter(t => new Date(t.timestamp).toDateString() === new Date().toDateString()).length,
+        history: {
+            week: getHistoryData(7),
+            month: getHistoryData(30),
+            halfYear: getHistoryData(180),
+            year: getHistoryData(365)
+        }
+    };
     const mapToNotification = (item, type) => ({
         id: item._id,
         type,
@@ -120,23 +169,9 @@ router.get('/stats', isCreator, asyncHandler(async (req, res) => {
 
     // Top 3 Leaderboard
     const leaderboard = notifications
+        .slice()
         .sort((a, b) => b.likes - a.likes)
         .slice(0, 3);
-
-    // Mock Traffic History for Graph
-    const generateHistory = (days) => {
-        const history = [];
-        const base = 50;
-        for (let i = days; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            history.push({
-                date: date.toISOString().split('T')[0],
-                views: Math.floor(base + Math.random() * 100 + (Math.sin(i / 5) * 20))
-            });
-        }
-        return history;
-    };
 
     res.json({
         subscribers: subscribers.length,
@@ -153,16 +188,7 @@ router.get('/stats', isCreator, asyncHandler(async (req, res) => {
             snippets: snippetLikes,
             total: workLikes + songLikes + snippetLikes
         },
-        traffic: {
-            total: views.works + views.songs + views.snippets + views.home,
-            breakdown: views,
-            history: {
-                week: generateHistory(7),
-                month: generateHistory(30),
-                halfYear: generateHistory(180),
-                year: generateHistory(365)
-            }
-        },
+        traffic: views,
         notifications,
         leaderboard
     });

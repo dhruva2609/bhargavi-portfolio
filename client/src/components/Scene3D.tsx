@@ -6,7 +6,7 @@ import { MotionValue } from "framer-motion";
 
 const Embers = ({ mouse }: { mouse: { x: MotionValue<number>, y: MotionValue<number> } }) => {
     const ref = useRef<THREE.Points>(null);
-    const count = 600; // Optimized from 1000 for performance
+    const count = 350; // Further optimized for maximum smoothness
 
     const positions = useMemo(() => {
         const pos = new Float32Array(count * 3);
@@ -128,9 +128,7 @@ const SceneContent = ({ mouse, scroll }: {
                 penumbra={1}
                 intensity={1200}
                 color="#FFFFFF"
-                castShadow
-                shadow-mapSize={[512, 512]}
-                shadow-bias={-0.0005}
+                shadow-mapSize={[256, 256]}
             />
             <pointLight position={[10, 10, 10]} intensity={1.5} color="#FBD7D1" />
             <pointLight position={[-10, -10, -10]} intensity={0.5} color="#E6E6FA" />
@@ -148,15 +146,14 @@ const Scene3D = ({ mouse, scroll }: {
     return (
         <div className="fixed inset-0 z-0 pointer-events-none bg-transparent">
             <Canvas
-                shadows={{ type: THREE.PCFShadowMap }}
                 camera={{ position: [0, 0, 15], fov: 45 }}
                 gl={{
                     powerPreference: "high-performance",
-                    antialias: true,
+                    antialias: false,
                     stencil: false,
                     depth: true
                 }}
-                dpr={[1, 1.5]}
+                dpr={[1, 1.2]}
             >
                 <SceneContent mouse={mouse} scroll={scroll} />
             </Canvas>

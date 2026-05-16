@@ -6,6 +6,9 @@ import { useMotionValue, useSpring, useScroll, useTransform, motion, AnimatePres
 import Scene3D from './Scene3D';
 import FloatingGarden from './FloatingGarden';
 import Stardust from './Stardust';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
@@ -19,6 +22,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         window.addEventListener('resize', check);
         return () => window.removeEventListener('resize', check);
     }, []);
+
+    // Track views
+    React.useEffect(() => {
+        const trackView = async () => {
+            try {
+                await axios.post(`${API_URL}/api/content/track`, { path: location.pathname });
+            } catch (err) {
+                // Silently fail view tracking
+            }
+        };
+        trackView();
+    }, [location.pathname]);
 
     // Lenis smooth scroll
     React.useEffect(() => {
