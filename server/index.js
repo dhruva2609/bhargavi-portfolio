@@ -40,7 +40,7 @@ app.use(helmet({
 
 // 2. Strict Production CORS
 const allowedOrigins = [
-  process.env.PRODUCTION_URL,
+  process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://127.0.0.1:5173'
 ].filter(Boolean);

@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const API_URL = process.env.PRODUCTION_URL || 'http://localhost:5000';
+const API_URL = process.env.PRODUCTION_URL; // Securely pulled from environment
 
 async function verifySanctuary() {
     console.log(`🌸 Starting Production Health Audit: ${API_URL}`);
@@ -20,7 +20,7 @@ async function verifySanctuary() {
             const start = Date.now();
             const res = await axios.get(`${API_URL}${endpoint.url}`);
             const duration = Date.now() - start;
-            
+
             if (res.status === 200) {
                 console.log(`✅ ${endpoint.name}: Connected (${duration}ms) - [${res.data.length} entries found]`);
             } else {

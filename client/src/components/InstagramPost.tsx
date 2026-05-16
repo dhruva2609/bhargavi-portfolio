@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Google Drive blocks direct embedding of images on third-party sites due to CORS.
 // This transformer takes any Drive link and converts it to a thumbnail endpoint that IS allowed to be embedded.

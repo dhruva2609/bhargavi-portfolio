@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Book, Plus, ChevronRight, Save, Edit3, Loader2, Music, Heart } from 'lucide-react';
 import featherSvg from '../assets/Feather.svg';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL;
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 const Creator = () => {

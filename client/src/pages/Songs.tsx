@@ -4,7 +4,7 @@ import { Music, ArrowLeft, Sparkles, Feather, Play, Heart } from 'lucide-react';
 import axios from 'axios';
 import SubscribeForm from '../components/SubscribeForm';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL;
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 // ── Mood pill colours ─────────────────────────────────────────────
