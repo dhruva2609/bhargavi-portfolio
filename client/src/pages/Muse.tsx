@@ -172,7 +172,7 @@ const Muse = () => {
             </div>
 
             {/* ── Hero: Who She Is ── */}
-            <div className="max-w-[1600px] mx-auto grid-asymmetric relative z-10 editorial-section pt-28 md:pt-36 pb-24 md:pb-48">
+            <div className="max-w-[1600px] mx-auto grid-asymmetric relative z-10 editorial-section pt-20 md:pt-28 pb-16 md:pb-24">
                 {/* Left: text */}
                 <div className="col-span-12 lg:col-span-7 flex flex-col justify-center items-center lg:items-start text-center lg:text-left gap-8 md:gap-20 pt-8 md:pt-20">
                     <motion.div
@@ -254,7 +254,7 @@ const Muse = () => {
             </div>
 
             {/* ── Bookshelf Archive ── */}
-            <section className="relative z-10 px-6 md:px-16 lg:px-24 py-4 md:py-4 overflow-hidden">
+            <section className="relative z-10 px-6 md:px-16 lg:px-24 py-10 md:py-16 overflow-hidden">
                 {/* Subtle gradient bg */}
                 <div
                     className="absolute inset-0 pointer-events-none"
@@ -267,7 +267,7 @@ const Muse = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.9, ease: editorialEase }}
-                        className="mb-12 md:mb-24"
+                        className="mb-10 md:mb-16"
                     >
                         <span className="metadata-precise text-muted-rosegold mb-4 block">Archive Volume I</span>
                         <h3 className="font-serif text-[clamp(2.5rem,6vw,6rem)] text-dream-purple italic">
@@ -295,7 +295,7 @@ const Muse = () => {
             </section>
 
             {/* ── Subscribe Form ── */}
-            <section className="relative z-10 px-6 py-16 md:py-32">
+            <section className="relative z-10 px-6 py-12 md:py-20">
                 <SubscribeForm
                     source="Archive Muse"
                     title="The Midnight Bulletin"

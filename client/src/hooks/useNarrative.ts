@@ -3,6 +3,17 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+const transformDriveUrl = (url: string) => {
+    if (!url) return url;
+    if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) return url;
+    
+    const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
+    if (idMatch && idMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+    }
+    return url;
+};
+
 const SAMPLE_DATA = {
     snippets: [
         {
@@ -57,10 +68,24 @@ const SAMPLE_DATA = {
         }
     ],
     instagram: [
-        { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "Editorial Vision", image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80" },
-        { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Symmetrical Echoes", image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80" },
-        { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Written Fragments", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80" },
-        { url: "https://www.instagram.com/p/DX-sfYmistG/", label: "The Silent Archive", image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80" }
+        {
+            _id: 'i1',
+            url: 'https://www.instagram.com/p/C69A1-yS6f5/',
+            label: 'Architectural Fragment 01',
+            image: 'https://drive.google.com/uc?export=view&id=1v0R8_Z5Y9X2W3V4U5T6S7R8Q9P0O1N2M'
+        },
+        {
+            _id: 'i2',
+            url: 'https://www.instagram.com/p/C6_A1-yS6f5/',
+            label: 'Silent Spaces',
+            image: 'https://drive.google.com/uc?export=view&id=1v0R8_Z5Y9X2W3V4U5T6S7R8Q9P0O1N2M_1'
+        },
+        {
+            _id: 'i3',
+            url: 'https://www.instagram.com/p/C7BA1-yS6f5/',
+            label: 'Light Study',
+            image: 'https://drive.google.com/uc?export=view&id=1v0R8_Z5Y9X2W3V4U5T6S7R8Q9P0O1N2M_2'
+        }
     ]
 };
 
@@ -77,7 +102,12 @@ export const useNarrative = (endpoint: 'stories' | 'snippets' | 'instagram') => 
                 const res = await axios.get(`${API_URL}/api/content/${endpoint}`);
                 
                 if (res.data && res.data.length > 0) {
-                    setData(res.data);
+                    const transformedData = res.data.map((item: any) => ({
+                        ...item,
+                        image: item.image ? transformDriveUrl(item.image) : item.image,
+                        coverImage: item.coverImage ? transformDriveUrl(item.coverImage) : item.coverImage
+                    }));
+                    setData(transformedData);
                 } else {
                     setData(SAMPLE_DATA[endpoint]);
                 }

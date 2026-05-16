@@ -6,6 +6,8 @@ import Creator from './pages/Creator'; // New Import
 import Reader from './pages/Reader';
 import Muse from './pages/Muse';
 import Songs from './pages/Songs';
+import Dashboard from './pages/Dashboard';
+
 import Layout from './components/Layout';
 
 import { useState, useEffect, type ReactNode } from 'react';
@@ -21,7 +23,7 @@ function App() {
         const timer = setTimeout(() => setLoading(false), 2000);
         return () => clearTimeout(timer);
     }, []);
-    
+
     return (
         <ErrorBoundary>
             <GlobalLoader loading={loading} />
@@ -31,8 +33,10 @@ function App() {
                         <Route path="/" element={<PageWrapper><Landing /></PageWrapper>} />
                         <Route path="/snippets" element={<PageWrapper><Feed /></PageWrapper>} />
                         <Route path="/write" element={<PageWrapper><Creator /></PageWrapper>} />
+                        <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
                         <Route path="/muse" element={<PageWrapper><Muse /></PageWrapper>} />
                         <Route path="/songs" element={<PageWrapper><Songs /></PageWrapper>} />
+
                         <Route path="/read/:slug" element={<PageWrapper><Reader /></PageWrapper>} />
                     </Routes>
                 </AnimatePresence>

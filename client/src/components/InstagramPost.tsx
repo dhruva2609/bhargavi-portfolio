@@ -1,17 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
-// Curated placeholder set — will swap to real image once fetched
-const PLACEHOLDERS = [
-    "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=800",
-];
+// Google Drive blocks direct embedding of images on third-party sites due to CORS.
+// This transformer takes any Drive link and converts it to a thumbnail endpoint that IS allowed to be embedded.
+const transformDriveUrl = (url: string) => {
+    if (!url) return url;
+    if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) return url;
+    
+    const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
+    if (idMatch && idMatch[1]) {
+        return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+    }
+    return url;
+};
 
 export const InstagramIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -28,16 +33,27 @@ interface InstagramPostProps {
     index?: number;
 }
 
-const InstagramPost: React.FC<InstagramPostProps> = ({ url, label, placeholderImage, index = 0 }) => {
+const InstagramPost: React.FC<InstagramPostProps> = ({ url, label, placeholderImage }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [thumbnail, setThumbnail] = useState<string>(
-        placeholderImage || PLACEHOLDERS[index % PLACEHOLDERS.length]
+        transformDriveUrl(placeholderImage || "")
     );
     const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
 
     useEffect(() => {
-        // Start with placeholder, then try to fetch the real thumbnail from our backend proxy
+        if (placeholderImage) {
+            setThumbnail(transformDriveUrl(placeholderImage));
+        }
+    }, [placeholderImage]);
+
+    useEffect(() => {
+        console.log("Loading Visual Grammar image link:", thumbnail);
+    }, [thumbnail]);
+
+    useEffect(() => {
         const fetchThumbnail = async () => {
+            if (placeholderImage) return; // Don't fetch if we already have a drive image or direct link
+
             try {
                 const sanitizedUrl = url.split('?')[0];
                 const res = await fetch(
@@ -46,162 +62,195 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ url, label, placeholderIm
                 if (res.ok) {
                     const data = await res.json();
                     if (data.thumbnail) {
-                        setThumbnail(data.thumbnail);
+                        setThumbnail(transformDriveUrl(data.thumbnail));
                     }
                 }
             } catch (err) {
-                // Keep showing placeholder — no visual disruption
-                console.warn('Thumbnail fetch failed, keeping placeholder for:', url);
+                console.warn('Thumbnail fetch failed, keeping current for:', url);
+            } finally {
+                setThumbnailLoaded(true);
             }
         };
-
         fetchThumbnail();
-    }, [url]);
+    }, [url, placeholderImage]);
 
-    // Load Instagram embed script when modal opens
     useEffect(() => {
+        let timeoutId: any;
         if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            const processEmbed = () => {
+                if ((window as any).instgrm) {
+                    (window as any).instgrm.Embeds.process();
+                }
+            };
+            
             if (!(window as any).instgrm) {
                 const script = document.createElement('script');
                 script.src = "//www.instagram.com/embed.js";
                 script.async = true;
                 document.body.appendChild(script);
                 script.onload = () => {
-                    (window as any).instgrm?.Embeds.process();
+                    timeoutId = setTimeout(processEmbed, 400);
                 };
             } else {
-                (window as any).instgrm?.Embeds.process();
+                timeoutId = setTimeout(processEmbed, 400);
             }
+        } else {
+            document.body.style.overflow = 'unset';
         }
+        return () => {
+            document.body.style.overflow = 'unset';
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, [isOpen]);
 
     const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
     return (
         <>
+            {createPortal(
+                <AnimatePresence>
+                    {isOpen && (
+                        <div className="instagram-modal-root" style={{ position: 'relative', zIndex: 9999 }}>
+                            <motion.div
+                                key="modal-backdrop"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsOpen(false)}
+                                className="fixed inset-0 cursor-zoom-out bg-white/98 backdrop-blur-xl"
+                                style={{
+                                    zIndex: 9998,
+                                    position: 'fixed',
+                                    top: 0, left: 0, right: 0, bottom: 0
+                                }}
+                            />
+
+                            <div
+                                className="fixed inset-0 flex items-center justify-center p-4 md:p-12"
+                                style={{
+                                    zIndex: 9999,
+                                    pointerEvents: 'none',
+                                    position: 'fixed',
+                                    top: 0, left: 0, right: 0, bottom: 0
+                                }}
+                            >
+                                <motion.div
+                                    key="instagram-modal-content"
+                                    initial={{ scale: 0.95, opacity: 0, y: 30 }}
+                                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                                    exit={{ scale: 0.95, opacity: 0, y: 30 }}
+                                    transition={{ ease: editorialEase, duration: 0.7 }}
+                                    className="relative w-full max-w-5xl h-[90vh] flex flex-col md:flex-row bg-white shadow-[0_50px_150px_rgba(0,0,0,0.3)] rounded-sm overflow-hidden border border-dream-purple/5"
+                                    style={{ pointerEvents: 'auto' }}
+                                >
+                                    <button
+                                        onClick={() => setIsOpen(false)}
+                                        className="absolute top-6 right-6 z-[210] p-3 rounded-full bg-white/80 backdrop-blur-md border border-dream-purple/10 text-dream-purple hover:text-cherry hover:scale-110 transition-all duration-300 shadow-sm"
+                                        aria-label="Close modal"
+                                    >
+                                        <X size={18} />
+                                    </button>
+
+                                    <div className="w-full md:w-80 p-10 border-r border-dream-purple/5 flex flex-col justify-between bg-white shrink-0 relative z-10">
+                                        <div>
+                                            <span className="metadata-precise text-muted-rosegold mb-8 block opacity-60">Visual Archive / Scene</span>
+                                            <h2 className="text-4xl font-serif italic text-dream-purple mb-6 leading-tight tracking-tight">{label}</h2>
+                                            <div className="w-12 h-[0.5px] bg-dream-purple/20 mb-8" />
+                                            <p className="text-charcoal/50 leading-relaxed italic font-serif text-base">
+                                                Exploring the silent language of architecture and light within the "Visual Grammar" series.
+                                            </p>
+                                        </div>
+                                        
+                                        <a
+                                            href={url && url.includes('instagram.com') ? url : placeholderImage}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 text-dream-purple/30 hover:text-cherry transition-colors group mt-12 no-underline"
+                                        >
+                                            <span className="metadata-precise text-[10px] uppercase tracking-[0.3em]">{url && url.includes('instagram.com') ? "Open Instagram" : "Open Original Image"}</span>
+                                            <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                        </a>
+                                    </div>
+
+                                    <div className="flex-1 bg-white overflow-y-auto p-4 md:p-12 custom-scrollbar flex justify-center items-start">
+                                        <div className="w-full max-w-[540px] py-4">
+                                            {url && url.includes('instagram.com') ? (
+                                                <blockquote
+                                                    key={`embed-${url}`}
+                                                    className="instagram-media w-full"
+                                                    data-instgrm-permalink={url}
+                                                    data-instgrm-version="14"
+                                                >
+                                                    <div className="p-20 flex flex-col items-center justify-center bg-off-white/30 border border-dream-purple/5 rounded-sm min-h-[400px]">
+                                                        <div className="animate-spin text-dream-purple/10 mb-6">
+                                                            <InstagramIcon size={56} />
+                                                        </div>
+                                                        <p className="text-muted-rosegold/40 metadata-precise animate-pulse uppercase tracking-[0.4em] text-[9px]">Fetching fragment from cloud...</p>
+                                                    </div>
+                                                </blockquote>
+                                            ) : (
+                                                <div className="p-4 flex items-center justify-center bg-off-white/30 border border-dream-purple/5 rounded-sm min-h-[400px]">
+                                                    <img src={thumbnail} alt={label} className="w-full h-auto object-contain rounded-sm" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
             <motion.div
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
                 variants={{
-                    hidden: { opacity: 0, scale: 0.95, y: 20 },
+                    hidden: { opacity: 0, scale: 0.98, y: 15 },
                     visible: {
                         opacity: 1,
                         scale: 1,
                         y: 0,
-                        transition: { duration: 1.2, ease: editorialEase }
+                        transition: { duration: 1, ease: editorialEase }
                     }
                 }}
-                className="editorial-card group relative aspect-[4/5] overflow-hidden flex-none w-[80vw] sm:w-[50vw] md:w-[400px] snap-center cursor-pointer"
+                className="editorial-card group relative aspect-square overflow-hidden flex-none w-[85vw] sm:w-[50vw] md:w-[400px] snap-center cursor-pointer bg-white/50 border border-dream-purple/5"
                 onClick={() => setIsOpen(true)}
             >
-                {/* Shimmer while loading */}
                 {!thumbnailLoaded && (
-                    <div className="absolute inset-0 shimmer z-10" />
+                    <div className="absolute inset-0 shimmer z-10 bg-off-white/5" />
                 )}
 
                 <img
                     src={thumbnail}
                     alt={label}
-                    className={`w-full h-full object-cover transition-all duration-[2000ms] ease-out pointer-events-none group-hover:scale-105 ${thumbnailLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    className={`w-full h-full object-cover transition-all duration-[1500ms] ease-out pointer-events-none group-hover:scale-105 ${thumbnailLoaded ? 'opacity-100' : 'opacity-0'}`}
                     loading="lazy"
                     onLoad={() => setThumbnailLoaded(true)}
                     onError={() => {
-                        // If the real thumbnail fails, fall back to placeholder
-                        setThumbnail(placeholderImage || PLACEHOLDERS[index % PLACEHOLDERS.length]);
                         setThumbnailLoaded(true);
                     }}
                 />
 
-                {/* Purple tint overlay */}
-                <div className="absolute inset-0 bg-dream-purple/[0.12] group-hover:bg-dream-purple/0 transition-colors duration-700 pointer-events-none" />
+                <div className="absolute inset-0 bg-dream-purple/[0.08] group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />
 
-                {/* Hover reveal */}
-                <div className="absolute inset-0 flex flex-col justify-end p-8 md:p-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-dream-purple/85 via-dream-purple/20 to-transparent pointer-events-none">
-                    <div className="flex items-center gap-2 text-dream-pink/80 metadata-precise mb-3">
+                <div className="absolute inset-0 flex flex-col justify-end p-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-t from-dream-purple/90 via-dream-purple/20 to-transparent pointer-events-none">
+                    <div className="flex items-center gap-2 text-dream-pink/70 metadata-precise mb-4">
                         <InstagramIcon size={12} />
-                        <span>Visual Fragment</span>
+                        <span>Visual Scene</span>
                     </div>
-                    <h3 className="text-white text-3xl italic font-serif tracking-tight leading-tight">{label}</h3>
-                    <p className="text-white/50 text-[9px] mt-3 uppercase tracking-[0.25em]">Tap to expand</p>
+                    <h3 className="text-white text-3xl italic font-serif tracking-tight leading-tight mb-2">{label}</h3>
+                    <div className="w-8 h-[1px] bg-white/20 mb-4" />
+                    <p className="text-white/40 text-[8px] uppercase tracking-[0.4em]">Tap to explore</p>
                 </div>
 
-                {/* Corner arrow */}
-                <div className="absolute top-6 right-6 w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white group-hover:bg-cherry group-hover:border-cherry transition-all duration-500 pointer-events-none">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M7 17L17 7M17 7H7M17 7V17" />
-                    </svg>
-                </div>
-
-                {/* Instagram badge */}
-                <div className="absolute top-6 left-6 w-8 h-8 flex items-center justify-center text-white/60 group-hover:text-white transition-colors duration-500 pointer-events-none">
-                    <InstagramIcon size={18} />
+                <div className="absolute top-8 left-8 w-10 h-10 flex items-center justify-center text-white/40 group-hover:text-white transition-colors duration-500 pointer-events-none">
+                    <InstagramIcon size={20} />
                 </div>
             </motion.div>
-
-            {/* Modal */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-12 bg-off-white/95 backdrop-blur-xl"
-                        onClick={(e) => { if (e.target === e.currentTarget) setIsOpen(false); }}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            transition={{ ease: editorialEase, duration: 0.8 }}
-                            className="relative w-full max-w-4xl h-[88vh] flex flex-col md:flex-row bg-white shadow-2xl rounded-sm overflow-hidden border border-dream-purple/5"
-                        >
-                            <button
-                                onClick={() => setIsOpen(false)}
-                                className="absolute top-5 right-5 z-[210] p-2.5 rounded-full bg-white/80 backdrop-blur-sm border border-dream-purple/10 text-dream-purple hover:text-cherry transition-colors duration-300"
-                            >
-                                <X size={20} />
-                            </button>
-
-                            {/* Left sidebar */}
-                            <div className="w-full md:w-72 p-8 md:p-10 border-r border-dream-purple/5 flex flex-col justify-between bg-off-white/50 shrink-0">
-                                <div>
-                                    <span className="metadata-precise text-muted-rosegold mb-6 block">Instagram Fragment</span>
-                                    <h2 className="text-3xl font-serif italic text-dream-purple mb-5 leading-tight">{label}</h2>
-                                    <div className="w-10 h-[0.5px] bg-dream-purple/20 mb-6" />
-                                    <p className="text-charcoal/55 leading-relaxed italic font-serif text-sm">
-                                        Part of the "Visual Grammar" series—exploring the silent language of architecture, light, and space.
-                                    </p>
-                                </div>
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2.5 text-dream-purple/40 hover:text-cherry transition-colors group mt-8"
-                                >
-                                    <span className="metadata-precise text-[9px] uppercase tracking-widest">View on Instagram</span>
-                                    <ExternalLink size={12} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                </a>
-                            </div>
-
-                            {/* Embed area */}
-                            <div className="flex-1 bg-white overflow-y-auto p-4 md:p-8 custom-scrollbar flex justify-center items-start pt-8">
-                                <div className="w-full max-w-[540px]">
-                                    <blockquote
-                                        className="instagram-media w-full"
-                                        data-instgrm-permalink={url}
-                                        data-instgrm-version="14"
-                                    >
-                                        <div className="p-16 flex flex-col items-center justify-center">
-                                            <div className="animate-spin text-dream-purple/20 mb-5">
-                                                <InstagramIcon size={48} />
-                                            </div>
-                                            <p className="text-muted-rosegold metadata-precise animate-pulse uppercase tracking-[0.2em] text-[10px]">Syncing with Instagram…</p>
-                                        </div>
-                                    </blockquote>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </>
     );
 };

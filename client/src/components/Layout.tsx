@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, PenTool, Sparkles, Music, Mail } from 'lucide-react';
+import { Home, BookOpen, Sparkles, Music, Mail } from 'lucide-react';
 import { InstagramIcon } from './InstagramPost';
 import { useMotionValue, useSpring, useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import Scene3D from './Scene3D';
@@ -51,8 +51,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         { path: '/', label: 'Home', icon: <Home size={15} /> },
         { path: '/snippets', label: 'Archive', icon: <BookOpen size={15} /> },
         { path: '/muse', label: 'Muse', icon: <Sparkles size={15} /> },
-        { path: '/songs', label: 'Melodies', icon: <Music size={15} /> },
-        { path: '/write', label: 'Create', icon: <PenTool size={15} /> },
+
+        { path: '/songs', label: 'Melodies', icon: <Music size={15} /> }
     ];
 
     const mouseX = useMotionValue(0);
@@ -152,17 +152,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </nav>
 
             {/* ── Main Content ── */}
-            <main>{children}</main>
+            <main className="relative">{children}</main>
 
             {/* ── Professional Editorial Footer ── */}
-            <footer className="relative z-10 pt-20 pb-12 bg-white/40 backdrop-blur-md border-t border-dream-purple/5 overflow-hidden">
+            <footer className="relative z-10 pt-12 pb-8 bg-white/40 backdrop-blur-md border-t border-dream-purple/5 overflow-hidden">
                 {/* ── Background Watermark ── */}
                 <div className="absolute -bottom-10 -right-10 opacity-[0.03] pointer-events-none select-none">
                     <h2 className="text-[20rem] font-serif italic text-dream-purple leading-none">B</h2>
                 </div>
 
                 <div className="max-w-7xl mx-auto px-6 lg:px-12">
-                    <div className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-0 mb-16">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-16 md:gap-0 mb-10">
                         {/* ── Brand Identity ── */}
                         <div className="flex flex-col gap-6 max-w-sm">
                             <Link to="/" className="inline-block group">

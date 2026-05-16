@@ -122,7 +122,7 @@ const Reader: React.FC = () => {
             />
 
             {/* Top Navigation & Progress Bar */}
-            <div className="fixed top-24 md:top-0 left-0 right-0 z-[150] p-6 md:p-10 flex flex-col gap-6">
+            <div className="fixed top-24 md:top-0 left-0 right-0 z-[150] p-4 md:p-8 flex flex-col gap-6">
                 <div className="flex justify-between items-center max-w-7xl mx-auto w-full">
                     <button
                         onClick={() => navigate(-1)}

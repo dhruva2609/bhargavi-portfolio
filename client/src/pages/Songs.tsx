@@ -203,7 +203,7 @@ const Songs = () => {
     }, []);
 
     return (
-        <div className="min-h-screen pt-28 md:pt-44 pb-24 md:pb-32 px-4 md:px-6 relative overflow-x-hidden">
+        <div className="min-h-screen pt-24 md:pt-36 pb-20 md:pb-28 px-4 md:px-6 relative overflow-x-hidden">
             {/* Ambient blobs */}
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
                 <div className="absolute top-1/4 -right-24 w-[400px] h-[400px] morph-blob bg-dream-purple/4 blur-3xl" />
@@ -219,7 +219,7 @@ const Songs = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -16 }}
                             transition={{ duration: 0.5, ease: editorialEase }}
-                            className="space-y-12 md:space-y-20"
+                            className="space-y-10 md:space-y-16"
                         >
                             {/* Header */}
                             <motion.header
@@ -285,7 +285,7 @@ const Songs = () => {
                             </div>
 
                             {/* ── Subscribe Form ── */}
-                            <div className="pt-16 md:pt-32">
+                            <div className="pt-16 md:pt-24">
                                 <SubscribeForm 
                                     source="Melodies" 
                                     title="Lyric Echoes"

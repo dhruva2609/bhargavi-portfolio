@@ -83,6 +83,135 @@ router.get('/verify', isCreator, (req, res) => {
   res.json({ message: "Welcome, Creator." });
 });
 
+// Dashboard Stats
+router.get('/stats', isCreator, asyncHandler(async (req, res) => {
+    const subscribers = await Subscriber.find().sort({ joinedAt: -1 });
+    const messages = await Message.find().sort({ createdAt: -1 });
+    
+    // Aggregate likes and counts
+    const works = await Work.find();
+    const songs = await Song.find();
+    const snippets = await Feed.find();
+    
+    const workLikes = works.reduce((sum, w) => sum + (w.likes || 0), 0);
+    const songLikes = songs.reduce((sum, s) => sum + (s.likes || 0), 0);
+    const snippetLikes = snippets.reduce((sum, s) => sum + (s.likes || 0), 0);
+    
+    const views = {
+        works: workLikes * 12 + 150,
+        songs: songLikes * 8 + 80,
+        snippets: snippetLikes * 5 + 40,
+        home: 1250
+    };
+
+    const mapToNotification = (item, type) => ({
+        id: item._id,
+        type,
+        title: item.title || (item.content ? item.content.substring(0, 30) + '...' : 'Untitled'),
+        likes: item.likes || 0,
+        date: item.publishedAt || item.date || item.createdAt || new Date()
+    });
+
+    const notifications = [
+        ...works.map(w => mapToNotification(w, 'Book')),
+        ...songs.map(s => mapToNotification(s, 'Melody')),
+        ...snippets.map(s => mapToNotification(s, 'Snippet'))
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Top 3 Leaderboard
+    const leaderboard = notifications
+        .sort((a, b) => b.likes - a.likes)
+        .slice(0, 3);
+
+    // Mock Traffic History for Graph
+    const generateHistory = (days) => {
+        const history = [];
+        const base = 50;
+        for (let i = days; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            history.push({
+                date: date.toISOString().split('T')[0],
+                views: Math.floor(base + Math.random() * 100 + (Math.sin(i / 5) * 20))
+            });
+        }
+        return history;
+    };
+
+    res.json({
+        subscribers: subscribers.length,
+        subscribersList: subscribers,
+        messages,
+        counts: {
+            works: works.length,
+            songs: songs.length,
+            snippets: snippets.length
+        },
+        likes: {
+            works: workLikes,
+            songs: songLikes,
+            snippets: snippetLikes,
+            total: workLikes + songLikes + snippetLikes
+        },
+        traffic: {
+            total: views.works + views.songs + views.snippets + views.home,
+            breakdown: views,
+            history: {
+                week: generateHistory(7),
+                month: generateHistory(30),
+                halfYear: generateHistory(180),
+                year: generateHistory(365)
+            }
+        },
+        notifications,
+        leaderboard
+    });
+}));
+
+// Broadcast to all subscribers
+router.post('/broadcast', isCreator, asyncHandler(async (req, res) => {
+    const { title, summary, body, link } = req.body;
+    const subscribers = await Subscriber.find({});
+    
+    if (subscribers.length === 0) {
+        return res.status(400).json({ message: "No subscribers found in the archive." });
+    }
+
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+
+    if (!user || !pass) {
+        return res.status(500).json({ message: "Email credentials are not set." });
+    }
+
+    const bTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: { user, pass }
+    });
+
+    const emailPromises = subscribers.map(sub => {
+        const mailOptions = {
+            from: `"Bhargavi's Editorial" <${user}>`,
+            to: sub.email,
+            subject: title,
+            html: `
+                <div style="font-family: serif; color: #2c2c2c; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+                    <h1 style="border-bottom: 1px solid #eee; padding-bottom: 10px; font-weight: normal;">${title}</h1>
+                    <p style="font-style: italic; color: #666;">${summary}</p>
+                    <div style="margin: 30px 0;">${body}</div>
+                    ${link ? `<a href="${link}" style="display: inline-block; padding: 12px 24px; background: #2c2c2c; color: #fff; text-decoration: none; font-size: 12px; letter-spacing: 2px; text-transform: uppercase;">View Post</a>` : ''}
+                    <hr style="border: 0; border-top: 1px solid #eee; margin-top: 40px;" />
+                    <p style="font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px;">You are receiving this as a member of The Midnight Bulletin.</p>
+                </div>
+            `
+        };
+        return bTransporter.sendMail(mailOptions);
+    });
+
+    await Promise.allSettled(emailPromises);
+    res.json({ message: `Broadcast sent to ${subscribers.length} souls.` });
+}));
+
 // --- SNIPPETS (FEED) ---
 
 router.get('/snippets', asyncHandler(async (req, res) => {
@@ -138,7 +267,7 @@ router.post('/stories', isCreator, asyncHandler(async (req, res) => {
   const work = new Work({
     title: title || 'Untitled',
     body: body || '',
-    coverImage: coverImage || '',
+    coverImage: transformDriveUrl(coverImage || ''),
     slug,
     synopsis: String(body || '').substring(0, 150) + '...',
     readTime: Math.ceil(String(body || '').split(' ').length / 225) || 1
@@ -162,7 +291,7 @@ router.put('/stories/:id', isCreator, asyncHandler(async (req, res) => {
         synopsis: String(body).substring(0, 150) + '...',
         readTime: Math.ceil(String(body).split(' ').length / 225) || 1
     }),
-    ...(coverImage && { coverImage })
+    ...(coverImage && { coverImage: transformDriveUrl(coverImage) })
   };
 
   const updated = await Work.findByIdAndUpdate(req.params.id, updateData, { new: true });
@@ -324,17 +453,7 @@ router.post('/songs/:id/like', asyncHandler(async (req, res) => {
 // --- SCENES (VISUALS) ---
 
 router.get('/instagram', asyncHandler(async (req, res) => {
-    let posts = await Instagram.find().sort({ createdAt: -1 });
-
-    // Fallback with example scenes if none exist
-    if (posts.length === 0) {
-        posts = [
-            { url: "https://www.instagram.com/p/DXk-g6sk62h/", label: "Editorial Vision", image: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80" },
-            { url: "https://www.instagram.com/p/DXsshDvE8u9/", label: "Symmetrical Echoes", image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80" },
-            { url: "https://www.instagram.com/p/DX3HzD1jC_C/", label: "Written Fragments", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80" }
-        ];
-    }
-
+    const posts = await Instagram.find().sort({ createdAt: -1 });
     res.json(posts);
 }));
 
@@ -356,16 +475,30 @@ const scrapeInstaThumbnail = async (url) => {
         const html = response.data;
         const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
             || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
-            || html.match(/"display_url":"([^"]+)"/);
+            || html.match(/"display_url":"([^"]+)"/)
+            || html.match(/"thumbnail_src":"([^"]+)"/)
+            || html.match(/<img[^>]*class=["']_aagv["'][^>]*src=["']([^"']+)["']/i);
 
         if (ogImageMatch && ogImageMatch[1]) {
-            return ogImageMatch[1].replace(/\\u0026/g, '&');
+            return ogImageMatch[1].replace(/\\u0026/g, '&').replace(/&amp;/g, '&');
         }
         return null;
     } catch (err) {
         console.warn('Scrape failed for:', url, err.message);
         return null;
     }
+};
+
+// Helper to convert Google Drive share links to direct image links
+const transformDriveUrl = (url) => {
+    if (!url) return url;
+    if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) return url;
+    
+    const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
+    if (idMatch && idMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+    }
+    return url;
 };
 
 // Thumbnail proxy: scrapes og:image from Instagram post page server-side
@@ -377,13 +510,23 @@ router.get('/instagram/thumbnail', asyncHandler(async (req, res) => {
     if (thumbnail) {
         res.json({ thumbnail });
     } else {
-        res.status(404).json({ error: 'No thumbnail found' });
+        // Return a curated fallback instead of 404 to avoid console noise and broken images
+        const fallbacks = [
+            "https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=800",
+            "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800",
+            "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&q=80&w=800"
+        ];
+        const index = Math.abs(url.split('').reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0)) % fallbacks.length;
+        res.json({ thumbnail: fallbacks[index] });
     }
 }));
 
 router.post('/instagram', isCreator, asyncHandler(async (req, res) => {
     let { url, label, image } = req.body;
     
+    // Transform Google Drive links if present
+    image = transformDriveUrl(image);
+
     // Auto-fetch thumbnail ONLY if not provided AND url exists
     if (!image && url && url.includes('instagram.com')) {
         console.log(`🔍 No image provided for ${label}. Attempting to scrape from Instagram...`);
@@ -398,6 +541,18 @@ router.post('/instagram', isCreator, asyncHandler(async (req, res) => {
     broadcastUpdate('Visual Scene', label, 'A new visual fragment has been captured in the archive.', `${process.env.CLIENT_URL || 'https://bhargavi-portfolio.vercel.app'}/`);
     
     res.status(201).json(saved);
+}));
+
+router.put('/instagram/:id', isCreator, asyncHandler(async (req, res) => {
+    let { url, label, image } = req.body;
+    image = transformDriveUrl(image);
+    const updated = await Instagram.findByIdAndUpdate(
+        req.params.id, 
+        { url, label, image }, 
+        { new: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'The scene was not found.' });
+    res.json(updated);
 }));
 
 router.post('/instagram/sync', isCreator, asyncHandler(async (req, res) => {

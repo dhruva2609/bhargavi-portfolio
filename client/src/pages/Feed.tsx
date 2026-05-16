@@ -22,8 +22,8 @@ const Feed = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-32 bg-transparent min-h-screen relative">
-            <header className="text-center mb-24 relative">
+        <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 bg-transparent min-h-screen relative">
+            <header className="text-center mb-16 md:mb-20 relative">
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] opacity-[0.03] pointer-events-none -z-10">
                     <img src={bookSvg} alt="Book Background" className="w-full h-auto" />
                 </div>
@@ -37,7 +37,7 @@ const Feed = () => {
                 columnClassName="pl-8 bg-clip-padding"
             >
                 {posts.map((post: any, idx: number) => (
-                    <div key={post._id || idx} className="mb-12">
+                    <div key={post._id || idx} className="mb-10 md:mb-12">
                         <SnippetCard 
                             id={post._id}
                             content={post.content || post.body} 
@@ -48,7 +48,7 @@ const Feed = () => {
                 ))}
             </Masonry>
 
-            <div className="mt-32">
+            <div className="mt-20 md:mt-28">
                 <SubscribeForm 
                     source="Archive (Echoes)" 
                     title="Whispers of the Archive"

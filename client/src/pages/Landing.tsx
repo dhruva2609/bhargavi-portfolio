@@ -6,8 +6,7 @@ import { useNarrative } from '../hooks/useNarrative';
 import bookSvg from '../assets/book.svg';
 import rosepenSvg from '../assets/rosepenhand.svg';
 import InstagramPost from '../components/InstagramPost';
-import { ArrowRight, Sparkles, Feather } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
 
@@ -145,7 +144,7 @@ const Landing = () => {
 
                 <motion.div
                     style={{ y: heroY }}
-                    className="relative z-10 editorial-section w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 pt-28 md:pt-20"
+                    className="relative z-10 editorial-section w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-12 pt-20 md:pt-24"
                 >
                     {/* Left: headline */}
                     <motion.div
@@ -228,7 +227,7 @@ const Landing = () => {
             <Marquee />
 
             {/* ── Stats bar ── */}
-            <section className="py-12 md:py-16 px-6">
+            <section className="py-10 md:py-12 px-6">
                 <div className="max-w-3xl mx-auto grid grid-cols-3 gap-6 md:gap-12">
                     <StatCard value="∞" label="Fragments Written" delay={0} />
                     <StatCard value="2026" label="Archive Established" delay={0.12} />
@@ -244,7 +243,7 @@ const Landing = () => {
             <section className="min-h-screen grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5 relative overflow-hidden">
 
                 {/* Left sticky panel */}
-                <div className="lg:col-span-5 flex flex-col justify-start p-8 md:p-24 border-b lg:border-b-0 lg:border-r border-dream-purple/5 bg-transparent relative overflow-hidden">
+                <div className="lg:col-span-5 flex flex-col justify-start p-8 md:p-16 border-b lg:border-b-0 lg:border-r border-dream-purple/5 bg-transparent relative overflow-hidden">
                     {/* Ambient blob */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-dream-pink/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -297,7 +296,7 @@ const Landing = () => {
                 </div>
 
                 {/* Right: scrollable feed */}
-                <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar p-6 md:p-16 bg-transparent">
+                <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar p-6 md:p-12 bg-transparent">
                     <motion.div
                         variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
                         initial="hidden"
@@ -331,37 +330,50 @@ const Landing = () => {
             {/* ───────────────────────────────────────────────────────
                 SECTION 3 — Visual Grammar (Swipeable Instagram carousel)
             ─────────────────────────────────────────────────────── */}
-            <section className="editorial-section border-t border-dream-purple/5 relative overflow-hidden">
+            <section className="editorial-section border-t border-dream-purple/5 relative overflow-hidden z-[50]">
                 <div className="absolute inset-0 pointer-events-none"
                     style={{ background: 'radial-gradient(ellipse 100% 60% at 50% 100%, rgba(251,215,209,0.12) 0%, transparent 70%)' }}
                 />
 
-                <div className="mb-10 md:mb-16 text-center lg:text-left relative z-10">
-                    <motion.span
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-10 md:mb-16 relative z-10 gap-6">
+                    <div className="text-center lg:text-left">
+                        <motion.span
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="metadata-precise text-muted-rosegold mb-4 block"
+                        >
+                            02 / Scenes
+                        </motion.span>
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, ease: editorialEase }}
+                            className="text-charcoal"
+                        >
+                            Visual <i className="text-cherry font-light">Grammar</i>
+                        </motion.h2>
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
-                        className="metadata-precise text-muted-rosegold mb-4 block"
+                        transition={{ duration: 1, delay: 0.3 }}
                     >
-                        02 / Scenes
-                    </motion.span>
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1, ease: editorialEase }}
-                        className="text-charcoal"
-                    >
-                        Visual <i className="text-cherry font-light">Grammar</i>
-                    </motion.h2>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="metadata-precise text-[10px] text-cherry hover:text-dream-purple transition-colors flex items-center gap-2 group border-b border-cherry/20 pb-1">
+                            Explore the Gallery <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                        </a>
+                    </motion.div>
                 </div>
 
                 <motion.div
                     variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
                     initial="hidden"
                     whileInView="visible"
-                    viewport={{ once: true }}
-                    className="flex overflow-x-auto gap-6 md:gap-10 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full relative z-10"
+                    viewport={{ once: true, margin: "-100px" }}
+                    className="flex overflow-x-auto gap-6 md:gap-10 pb-8 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full relative z-20"
                 >
                     {instaLoading ? (
                         [1, 2, 3, 4].map(i => <div key={i} className="shimmer min-w-[300px] aspect-[4/5] rounded-xl" />)
@@ -393,7 +405,7 @@ const Landing = () => {
             {/* ───────────────────────────────────────────────────────
                 SECTION 4 — Sanctuary (full-bleed CTA)
             ─────────────────────────────────────────────────────── */}
-            <section className="relative min-h-[80svh] flex flex-col items-center justify-center overflow-hidden bg-dream-purple text-off-white px-6 py-24 md:py-40">
+            <section className="relative min-h-[80svh] flex flex-col items-center justify-center overflow-hidden bg-dream-purple text-off-white px-6 py-24 md:py-40 z-10">
                 {/* Background wave SVG */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                     <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">

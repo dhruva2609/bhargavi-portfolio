@@ -132,12 +132,21 @@ const Creator = () => {
         if (!editorContent.title.trim() || !editorContent.imageUrl.trim()) return;
         try {
             setSaving(true);
-            await axios.post(`${API_URL}/api/content/instagram`, {
-                label: editorContent.title,
-                image: editorContent.imageUrl,
-                url: editorContent.instaUrl
-            }, authHeaders);
-            alert("The scene has been captured in the archive.");
+            if (selectedScene) {
+                await axios.put(`${API_URL}/api/content/instagram/${selectedScene._id}`, {
+                    label: editorContent.title,
+                    image: editorContent.imageUrl,
+                    url: editorContent.instaUrl
+                }, authHeaders);
+                alert("The scene has been reimagined.");
+            } else {
+                await axios.post(`${API_URL}/api/content/instagram`, {
+                    label: editorContent.title,
+                    image: editorContent.imageUrl,
+                    url: editorContent.instaUrl
+                }, authHeaders);
+                alert("The scene has been captured in the archive.");
+            }
             fetchScenes();
             setView('list');
         } catch (err) {
@@ -200,6 +209,20 @@ const Creator = () => {
         setSelectedSong(null);
         setSelectedScene(null);
         setEditorContent({ title: '', body: '', mood: 'Melancholic', imageUrl: '', instaUrl: '' });
+        setView('editor');
+    };
+
+    const handleSelectScene = (scene: any) => {
+        setSelectedScene(scene);
+        setSelectedBook(null);
+        setSelectedSong(null);
+        setEditorContent({ 
+            title: scene.label, 
+            body: '', 
+            mood: 'Melancholic', 
+            imageUrl: scene.image || '', 
+            instaUrl: scene.url || '' 
+        });
         setView('editor');
     };
 
@@ -493,10 +516,11 @@ const Creator = () => {
                                     </div>
                                 ))
                             ) : mode === 'scene' ? (
-                                scenes.map((scene) => (
+                                 scenes.map((scene) => (
                                     <div 
                                         key={scene._id}
-                                        className="editorial-card group p-6 border border-cherry/5"
+                                        onClick={() => handleSelectScene(scene)}
+                                        className="editorial-card group p-6 border border-cherry/5 cursor-pointer hover:border-cherry/20 transition-all duration-500"
                                         style={{ backgroundColor: 'var(--color-glass-bg)' }}
                                     >
                                         <div className="aspect-square rounded-xl overflow-hidden mb-6 relative group/img">
@@ -636,7 +660,7 @@ const Creator = () => {
                                             >
                                                 {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                                                 <span className="font-serif italic text-xl">
-                                                    {mode === 'melody' ? 'Save Melody' : mode === 'scene' ? 'Capture Scene' : 'Save to Bookshelf'}
+                                                    {mode === 'melody' ? 'Save Melody' : mode === 'scene' ? (selectedScene ? 'Reimagine Scene' : 'Capture Scene') : 'Save to Bookshelf'}
                                                 </span>
                                             </button>
                                         </div>

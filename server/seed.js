@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Work from './models/Work.js';
+import Instagram from './models/Instagram.js';
 
 dotenv.config();
 
@@ -25,23 +26,47 @@ const stories = [
   }
 ];
 
+const visualGrammar = [
+  {
+    url: 'https://www.instagram.com/p/C69A1-yS6f5/',
+    label: 'Architectural Fragment 01',
+    image: 'https://drive.google.com/file/d/1v0R8_Z5Y9X2W3V4U5T6S7R8Q9P0O1N2M/view'
+  },
+  {
+    url: 'https://www.instagram.com/p/C6_A1-yS6f5/',
+    label: 'Silent Spaces',
+    image: 'https://drive.google.com/file/d/1v0R8_Z5Y9X2W3V4U5T6S7R8Q9P0O1N2M_1/view'
+  },
+  {
+    url: 'https://www.instagram.com/p/C7BA1-yS6f5/',
+    label: 'Light Study',
+    image: 'https://drive.google.com/file/d/1v0R8_Z5Y9X2W3V4U5T6S7R8Q9P0O1N2M_2/view'
+  }
+];
+
 const seedDatabase = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bhargavi_portfolio';
+    await mongoose.connect(MONGO_URI);
     console.log("Connected to the archive...");
 
     // Clear existing works to avoid duplicates during seeding
     await Work.deleteMany({});
+    await Instagram.deleteMany({});
     
+    // Seed Stories
     const preparedStories = stories.map(s => ({
       ...s,
       slug: s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
       synopsis: s.body.substring(0, 150) + '...',
       publishedAt: new Date()
     }));
-
     await Work.insertMany(preparedStories);
     console.log("Sample books have been etched into the archive.");
+
+    // Seed Visual Grammar
+    await Instagram.insertMany(visualGrammar);
+    console.log("Visual Grammar fragments have been captured.");
     
     process.exit(0);
   } catch (err) {
