@@ -33,6 +33,7 @@ function App() {
                         <Route path="/" element={<PageWrapper><Landing /></PageWrapper>} />
                         <Route path="/snippets" element={<PageWrapper><Feed /></PageWrapper>} />
                         <Route path="/write" element={<PageWrapper><Creator /></PageWrapper>} />
+                        <Route path="/creator" element={<PageWrapper><Creator /></PageWrapper>} />
                         <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
                         <Route path="/muse" element={<PageWrapper><Muse /></PageWrapper>} />
                         <Route path="/songs" element={<PageWrapper><Songs /></PageWrapper>} />

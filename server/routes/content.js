@@ -9,14 +9,25 @@ import axios from 'axios';
 import nodemailer from 'nodemailer';
 import { welcomeTemplate, inquiryTemplate, broadcastTemplate } from '../utils/emailTemplates.js';
 
-// Email Transporter Setup
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Helper to create a robust secure SMTP email transporter (works on both local and production)
+const createMailTransporter = () => {
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+    
+    if (!user || !pass) {
+        return null;
+    }
+
+    return nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // Use SSL/TLS for secure port 465
+        auth: { user, pass },
+        tls: {
+            rejectUnauthorized: false // Prevents connection blocks due to self-signed certs in hosting containers
+        }
+    });
+};
 
 // Helper to broadcast to all subscribers
 const broadcastUpdate = async (type, title, summary, link) => {
@@ -25,17 +36,12 @@ const broadcastUpdate = async (type, title, summary, link) => {
         if (subscribers.length === 0) return;
 
         const user = process.env.EMAIL_USER;
-        const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+        const bTransporter = createMailTransporter();
         
-        if (!user || !pass) {
-            console.warn("⚠️ Broadcast skipped: Email credentials missing.");
+        if (!bTransporter) {
+            console.warn("⚠️ Broadcast skipped: Email credentials missing or invalid.");
             return;
         }
-
-        const bTransporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user, pass }
-        });
 
         console.log(`📣 Broadcasting ${type} to ${subscribers.length} subscribers...`);
 
@@ -204,16 +210,11 @@ router.post('/broadcast', isCreator, asyncHandler(async (req, res) => {
     }
 
     const user = process.env.EMAIL_USER;
-    const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+    const bTransporter = createMailTransporter();
 
-    if (!user || !pass) {
+    if (!bTransporter) {
         return res.status(500).json({ message: "Email credentials are not set." });
     }
-
-    const bTransporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: { user, pass }
-    });
 
     const emailPromises = subscribers.map(sub => {
         const mailOptions = {
@@ -353,15 +354,11 @@ router.post('/collaborate', asyncHandler(async (req, res) => {
 
   // Lazy-initialize Transporter
   const user = process.env.EMAIL_USER;
-  const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
   const receiver = process.env.EMAIL_RECEIVER || 'dhruvapandya86@gmail.com';
+  const dynamicTransporter = createMailTransporter();
 
-  if (user && pass) {
+  if (dynamicTransporter) {
     console.log(`✉️ Sending notification to ${receiver}...`);
-    const dynamicTransporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass }
-    });
 
     const mailOptions = {
       from: user,
@@ -403,14 +400,10 @@ router.post('/subscribe', asyncHandler(async (req, res) => {
 
         // Lazy-initialize Transporter
         const user = process.env.EMAIL_USER;
-        const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
+        const dynamicTransporter = createMailTransporter();
 
-        if (user && pass) {
+        if (dynamicTransporter) {
             console.log(`✉️ Initializing mailer for ${user}...`);
-            const dynamicTransporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: { user, pass }
-            });
 
             const welcomeOptions = {
                 from: `"The Midnight Bulletin" <${user}>`,
