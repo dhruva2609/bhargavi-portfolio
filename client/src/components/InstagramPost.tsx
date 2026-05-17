@@ -10,7 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 const transformDriveUrl = (url: string) => {
     if (!url) return url;
     if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) return url;
-    
+
     const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
     if (idMatch && idMatch[1]) {
         return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
@@ -83,7 +83,7 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ url, label, placeholderIm
                     (window as any).instgrm.Embeds.process();
                 }
             };
-            
+
             if (!(window as any).instgrm) {
                 const script = document.createElement('script');
                 script.src = "//www.instagram.com/embed.js";
@@ -161,7 +161,7 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ url, label, placeholderIm
                                                 Exploring the silent language of architecture and light within the "Visual Grammar" series.
                                             </p>
                                         </div>
-                                        
+
                                         <a
                                             href={url && url.includes('instagram.com') ? url : placeholderImage}
                                             target="_blank"

@@ -37,7 +37,6 @@ function App() {
                         <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
                         <Route path="/muse" element={<PageWrapper><Muse /></PageWrapper>} />
                         <Route path="/songs" element={<PageWrapper><Songs /></PageWrapper>} />
-                        <Route path="/write" element={<PageWrapper><Creator /></PageWrapper>} />
                         <Route path="/read/:slug" element={<PageWrapper><Reader /></PageWrapper>} />
                     </Routes>
                 </AnimatePresence>

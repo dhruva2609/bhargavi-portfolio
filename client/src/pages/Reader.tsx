@@ -165,7 +165,7 @@ const Reader: React.FC = () => {
             </div>
 
             {/* 3D Book Architecture */}
-            <div className={`relative w-full ${isMobile ? 'max-w-md aspect-[1/1.5]' : 'max-w-6xl aspect-[4/3] md:aspect-[3/2]'} flex items-center justify-center mt-56 md:mt-40 px-6`}>
+            <div className={`relative w-full ${isMobile ? 'max-w-md h-[68svh]' : 'max-w-6xl aspect-[4/3] md:aspect-[3/2]'} flex items-center justify-center mt-36 md:mt-40 px-6`}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -174,20 +174,25 @@ const Reader: React.FC = () => {
                 >
                     {/* Hardcover */}
                     <motion.div
-                        animate={{
+                        animate={isMobile ? {
+                            y: isOpen ? '-110%' : '0%',
+                            opacity: isOpen ? 0 : 1,
+                            pointerEvents: isOpen ? 'none' : 'auto',
+                            zIndex: isOpen ? 0 : 100,
+                        } : {
                             rotateY: isOpen ? -180 : 0,
                             zIndex: isOpen ? 0 : 100,
-                            x: isOpen ? '0%' : (isMobile ? '0%' : '25%'),
+                            x: isOpen ? '0%' : '25%',
                         }}
                         transition={{ duration: 1.8, ease: editorialEase }}
                         onClick={() => !isOpen && setIsOpen(true)}
-                        style={{ transformOrigin: 'left center' }}
-                        className={`absolute ${isMobile ? 'left-0 w-full' : 'left-1/4 w-1/2'} top-0 h-full cover-texture rounded-r-lg cursor-pointer shadow-[20px_40px_80px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center p-8 md:p-12 border-l-8 border-black/10 z-100`}
+                        style={{ transformOrigin: isMobile ? 'center center' : 'left center' }}
+                        className={`absolute ${isMobile ? 'left-0 w-full' : 'left-1/4 w-1/2'} top-0 h-full cover-texture rounded-lg cursor-pointer shadow-[20px_40px_80px_rgba(0,0,0,0.3)] flex flex-col items-center justify-center p-8 md:p-12 border-l-8 border-black/10`}
                     >
                         <div className="border border-white/5 w-full h-full flex flex-col items-center justify-center text-center p-8 relative overflow-hidden group">
                             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                             <span className="metadata-precise text-white/30 mb-8 block">Fragments of the Soul</span>
-                            <h1 className="text-4xl md:text-7xl font-serif italic text-dream-pink leading-tight mb-8 tracking-tighter">
+                            <h1 className="text-3xl md:text-5xl font-serif italic text-dream-pink leading-tight mb-8 tracking-tighter">
                                 {work?.title}
                             </h1>
                             <div className="w-16 h-[1px] bg-white/10 mb-8" />
@@ -227,6 +232,8 @@ const Reader: React.FC = () => {
                                         ))}
                                     </div>
                                 </div>
+                                {/* Bottom scroll fade overlay */}
+                                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#F4EBD0]/95 via-[#F4EBD0]/60 to-transparent pointer-events-none z-20" />
                             </div>
                         ) : (
                             /* Desktop: two-page spread */
@@ -248,6 +255,8 @@ const Reader: React.FC = () => {
                                             ))}
                                         </div>
                                     </div>
+                                    {/* Bottom scroll fade overlay */}
+                                    <div className="absolute bottom-16 left-0 right-6 h-12 bg-gradient-to-t from-[#F4EBD0]/90 to-transparent pointer-events-none z-20" />
                                     <div className="mt-8 flex justify-between items-center metadata-precise text-muted-rosegold/30 text-[9px] relative z-10">
                                         <span>{(currentPage * 2) + 1}</span>
                                         {currentPage > 0 && (
@@ -283,6 +292,8 @@ const Reader: React.FC = () => {
                                             ))}
                                         </div>
                                     </div>
+                                    {/* Bottom scroll fade overlay */}
+                                    <div className="absolute bottom-16 left-6 right-0 h-12 bg-gradient-to-t from-[#F4EBD0]/90 to-transparent pointer-events-none z-20" />
                                     {stamps.filter(s => s.spread === currentPage && s.x >= 0).map(stamp => (
                                         <motion.div
                                             key={stamp.id}

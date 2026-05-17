@@ -93,6 +93,12 @@ const Dashboard = () => {
                     <div className="mt-8 space-y-6">
                         <input
                             type="password"
+                            id="vault-passphrase"
+                            name="vault-passphrase"
+                            autoComplete="new-password"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
                             placeholder="Enter the secret passphrase..."
                             value={passphrase}
                             onChange={(e) => setPassphrase(e.target.value)}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Sparkles, Music, Mail } from 'lucide-react';
+import { Home, BookOpen, Sparkles, Music, Mail, Menu, X } from 'lucide-react';
 import { InstagramIcon } from './InstagramPost';
 import { useMotionValue, useSpring, useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import Scene3D from './Scene3D';
@@ -14,6 +14,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
 
     const [isMobile, setIsMobile] = React.useState(false);
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
     // Detect mobile
     React.useEffect(() => {
@@ -22,6 +23,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         window.addEventListener('resize', check);
         return () => window.removeEventListener('resize', check);
     }, []);
+
+    // Close menu on navigation
+    React.useEffect(() => {
+        setIsMenuOpen(false);
+    }, [location.pathname]);
 
     // Track views
     React.useEffect(() => {
@@ -63,11 +69,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }, []);
 
     const navLinks = [
-        { path: '/', label: 'Home', icon: <Home size={15} /> },
-        { path: '/snippets', label: 'Archive', icon: <BookOpen size={15} /> },
-        { path: '/muse', label: 'Muse', icon: <Sparkles size={15} /> },
+        { path: '/', label: 'Home', icon: <Home size={17} className="stroke-[1.5]" /> },
+        { path: '/snippets', label: 'Archive', icon: <BookOpen size={17} className="stroke-[1.5]" /> },
+        { path: '/muse', label: 'Muse', icon: <Sparkles size={17} className="stroke-[1.5]" /> },
 
-        { path: '/songs', label: 'Melodies', icon: <Music size={15} /> }
+        { path: '/songs', label: 'Melodies', icon: <Music size={17} className="stroke-[1.5]" /> }
     ];
 
     const mouseX = useMotionValue(0);
@@ -130,41 +136,144 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 style={{ scaleX: scrollYProgress }}
             />
 
-            {/* ── Floating Pill Navbar ── */}
-            <nav
-                className="glass-pill fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[100] px-3 py-2 md:px-8 md:py-4 flex items-center gap-3 md:gap-10 w-[92%] md:w-auto max-w-[420px] md:max-w-none justify-around md:justify-center"
-            >
-                {navLinks.map((link) => {
-                    const active = location.pathname === link.path;
-                    return (
-                        <Link
-                            key={link.path}
-                            to={link.path}
-                            className={`relative flex items-center gap-1.5 md:gap-2.5 transition-all duration-500 group ${active ? 'text-dream-purple' : 'text-dream-purple/35 hover:text-cherry'
-                                }`}
-                        >
-                            {/* active dot indicator */}
-                            <AnimatePresence>
-                                {active && (
-                                    <motion.span
-                                        layoutId="nav-indicator"
-                                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cherry"
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        exit={{ scale: 0 }}
-                                    />
-                                )}
-                            </AnimatePresence>
-                            <div className="group-hover:scale-110 transition-transform duration-300">
-                                {link.icon}
-                            </div>
-                            <span className="hidden sm:inline metadata-precise text-[7px] md:text-[9px] tracking-[0.2em] md:tracking-[0.3em]">
-                                {link.label}
-                            </span>
-                        </Link>
-                    );
-                })}
-            </nav>
+            {/* ── Persistent Desktop Floating Pill Navbar (Desktop Only) ── */}
+            {!isMobile && (
+                <nav
+                    className="glass-pill fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[100] px-8 py-4 flex items-center gap-10 w-auto justify-center shadow-lg"
+                >
+                    {navLinks.map((link) => {
+                        const active = location.pathname === link.path;
+                        return (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                className={`relative flex items-center gap-2.5 transition-all duration-500 group ${active ? 'text-dream-purple scale-105' : 'text-dream-purple/35 hover:text-cherry'
+                                    }`}
+                            >
+                                {/* active dot indicator */}
+                                <AnimatePresence>
+                                    {active && (
+                                        <motion.span
+                                            layoutId="nav-indicator-desktop"
+                                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-cherry"
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0 }}
+                                        />
+                                    )}
+                                </AnimatePresence>
+                                <div className="group-hover:scale-110 transition-transform duration-300">
+                                    {link.icon}
+                                </div>
+                                <span className="hidden sm:inline metadata-precise text-[9px] tracking-[0.3em]">
+                                    {link.label}
+                                </span>
+                            </Link>
+                        );
+                    })}
+                </nav>
+            )}
+
+            {/* ── Mobile Sidebar Menu (Mobile Only) ── */}
+            {isMobile && (
+                <>
+                    {/* Clean Toggle Trigger in Top-Right without solid white circle */}
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        className="fixed top-6 right-6 z-[150] p-2 text-dream-purple/70 hover:text-cherry transition-colors cursor-pointer select-none active:scale-95 flex items-center justify-center bg-transparent border-none outline-none"
+                    >
+                        <AnimatePresence mode="wait">
+                            {isMenuOpen ? (
+                                <motion.div
+                                    key="close"
+                                    initial={{ rotate: -90, opacity: 0 }}
+                                    animate={{ rotate: 0, opacity: 1 }}
+                                    exit={{ rotate: 90, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <X size={22} className="stroke-[1.5]" />
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="menu"
+                                    initial={{ rotate: 90, opacity: 0 }}
+                                    animate={{ rotate: 0, opacity: 1 }}
+                                    exit={{ rotate: -90, opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Menu size={22} className="stroke-[1.5]" />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </button>
+
+                    {/* Dark Backdrop Overlay */}
+                    <AnimatePresence>
+                        {isMenuOpen && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 0.25 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="fixed inset-0 bg-black z-[130]"
+                            />
+                        )}
+                    </AnimatePresence>
+
+                    {/* Sliding Sidebar Drawer */}
+                    <AnimatePresence>
+                        {isMenuOpen && (
+                            <motion.div
+                                initial={{ x: "100%" }}
+                                animate={{ x: 0 }}
+                                exit={{ x: "100%" }}
+                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                className="fixed top-0 right-0 h-full w-[260px] bg-white/90 backdrop-blur-2xl border-l border-dream-purple/5 shadow-2xl z-[140] flex flex-col justify-between p-8 pt-24"
+                            >
+                                {/* Navigation Content */}
+                                <div className="flex flex-col gap-10">
+                                    <div className="flex flex-col gap-1.5 pl-4">
+                                        <span className="metadata-precise text-[7px] tracking-[0.4em] uppercase text-muted-rosegold/50">Navigation</span>
+                                        <div className="w-8 h-[1px] bg-dream-purple/10" />
+                                    </div>
+                                    <div className="flex flex-col gap-5">
+                                        {navLinks.map((link) => {
+                                            const active = location.pathname === link.path;
+                                            return (
+                                                <Link
+                                                    key={link.path}
+                                                    to={link.path}
+                                                    className={`relative py-3 px-4 rounded-xl flex items-center gap-4 transition-all duration-300 group ${active ? 'bg-dream-purple/5 text-dream-purple font-medium' : 'text-dream-purple/40 hover:text-cherry'
+                                                        }`}
+                                                >
+                                                    <div className="group-hover:scale-110 transition-transform duration-300">
+                                                        {link.icon}
+                                                    </div>
+                                                    <span className="text-xs font-serif italic tracking-[0.1em]">
+                                                        {link.label}
+                                                    </span>
+                                                    {active && (
+                                                        <motion.div
+                                                            layoutId="sidebar-active-dot"
+                                                            className="absolute left-0 w-1 h-4 rounded-r bg-cherry"
+                                                        />
+                                                    )}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Sidebar Footer */}
+                                <div className="flex flex-col gap-4 pl-4 border-t border-dream-purple/5 pt-6">
+                                    <span className="metadata-precise text-[7px] tracking-[0.2em] text-muted-rosegold/30 uppercase">Bhargavi</span>
+                                    <span className="text-[6px] tracking-widest text-dream-purple/20">© {new Date().getFullYear()} ARCHIVE</span>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </>
+            )}
 
             {/* ── Main Content ── */}
             <main className="relative">{children}</main>

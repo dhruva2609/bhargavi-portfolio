@@ -183,7 +183,7 @@ const Muse = () => {
                         <span className="metadata-precise text-muted-rosegold mb-6 md:mb-8 block">
                             The Narrative
                         </span>
-                        <h2 className="font-serif text-[clamp(3rem,8vw,8rem)] text-dream-purple mb-8 md:mb-12 italic font-light tracking-tighter leading-none">
+                        <h2 className="font-serif text-[clamp(2.2rem,6vw,4.5rem)] text-dream-purple mb-8 md:mb-12 italic font-light tracking-tighter leading-none">
                             The Woman <br /> Behind the{" "}
                             <i className="text-cherry font-normal">Ink</i>
                         </h2>
@@ -193,7 +193,7 @@ const Muse = () => {
                         style={{ opacity: textOpacity }}
                         className="space-y-8 md:space-y-12 font-serif text-lg md:text-2xl leading-[1.7] text-charcoal/70 italic max-w-2xl relative px-4 md:px-0"
                     >
-                        <p className="relative text-justify">
+                        <p className="relative text-center lg:text-justify">
                             <span className="absolute -left-8 -top-8 text-[5rem] md:text-[8rem] text-dream-pink/25 font-serif select-none pointer-events-none leading-none">
                                 "
                             </span>
@@ -201,7 +201,7 @@ const Muse = () => {
                             a thought and its expression, favouring the scent of old paper and the
                             melancholy of a setting sun.
                         </p>
-                        <p className="relative mt-8 text-justify">
+                        <p className="relative mt-8 text-center lg:text-justify">
                             Her writing bridges the classical elegance of Urdu poetry
                             and the visceral emotions of modern storytelling. Every word is
                             chosen with grace; every story is a fragment of a soul.
@@ -270,7 +270,7 @@ const Muse = () => {
                         className="mb-10 md:mb-16"
                     >
                         <span className="metadata-precise text-muted-rosegold mb-4 block">Archive Volume I</span>
-                        <h3 className="font-serif text-[clamp(2.5rem,6vw,6rem)] text-dream-purple italic">
+                        <h3 className="font-serif text-[clamp(1.8rem,4.5vw,3.2rem)] text-dream-purple italic">
                             The <i className="text-cherry">Bookshelf</i>
                         </h3>
                         <p className="font-serif italic text-charcoal/40 text-base md:text-xl mt-4 max-w-lg">

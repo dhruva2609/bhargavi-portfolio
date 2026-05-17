@@ -10,9 +10,9 @@ const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 // ── Mood pill colours ─────────────────────────────────────────────
 const moodColour = (mood: string) => {
     const m = (mood || '').toLowerCase();
-    if (m.includes('melanchol'))  return { bg: 'rgba(104,76,143,0.08)', text: '#684c8f', border: 'rgba(104,76,143,0.15)' };
-    if (m.includes('hope'))       return { bg: 'rgba(255,77,141,0.08)', text: '#FF4D8D', border: 'rgba(255,77,141,0.15)' };
-    if (m.includes('nostalg'))    return { bg: 'rgba(183,110,121,0.08)', text: '#B76E79', border: 'rgba(183,110,121,0.15)' };
+    if (m.includes('melanchol')) return { bg: 'rgba(104,76,143,0.08)', text: '#684c8f', border: 'rgba(104,76,143,0.15)' };
+    if (m.includes('hope')) return { bg: 'rgba(255,77,141,0.08)', text: '#FF4D8D', border: 'rgba(255,77,141,0.15)' };
+    if (m.includes('nostalg')) return { bg: 'rgba(183,110,121,0.08)', text: '#B76E79', border: 'rgba(183,110,121,0.15)' };
     if (m.includes('celebr') || m.includes('joy')) return { bg: 'rgba(251,215,209,0.25)', text: '#B76E79', border: 'rgba(251,215,209,0.4)' };
     return { bg: 'rgba(104,76,143,0.06)', text: '#684c8f', border: 'rgba(104,76,143,0.12)' };
 };
@@ -80,7 +80,7 @@ const SongCard = ({ song, onClick, index }: { song: any; onClick: () => void; in
                 </div>
 
                 {/* Title */}
-                <h3 className="font-serif text-2xl md:text-4xl italic text-dream-purple group-hover:text-cherry transition-colors duration-500 mb-4 leading-tight">
+                <h3 className="font-serif text-2xl md:text-4xl italic text-dream-purple group-hover:text-cherry transition-colors duration-500 mt-2 md:mt-3 mb-4 leading-tight">
                     {song.title}
                 </h3>
 
@@ -144,7 +144,7 @@ const SongViewer = ({ song, onClose }: { song: any; onClose: () => void }) => {
                         <span className="metadata-precise text-[9px] tracking-[0.5em]" style={{ color: clr.text }}>
                             Written Song
                         </span>
-                        <h2 className="font-serif text-4xl md:text-7xl italic text-dream-purple tracking-tighter leading-none">
+                        <h2 className="font-serif text-3xl md:text-5xl italic text-dream-purple tracking-tighter leading-none mt-3 md:mt-4">
                             {song.title}
                         </h2>
                         <div className="flex items-center justify-center gap-4 text-muted-rosegold/30">
@@ -235,7 +235,7 @@ const Songs = () => {
                                     <Music size={28} className="text-dream-purple/60" />
                                 </motion.div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-3 md:space-y-4">
                                     <span className="metadata-precise text-[9px] md:text-[10px] tracking-[0.6em] text-muted-rosegold uppercase block">
                                         The Melodies
                                     </span>
@@ -286,8 +286,8 @@ const Songs = () => {
 
                             {/* ── Subscribe Form ── */}
                             <div className="pt-16 md:pt-24">
-                                <SubscribeForm 
-                                    source="Melodies" 
+                                <SubscribeForm
+                                    source="Melodies"
                                     title="Lyric Echoes"
                                     subtitle="Subscribe to hear the melodies first. New lyrics sent to your sanctuary as they are born."
                                 />

@@ -306,6 +306,12 @@ const Creator = () => {
                     </div>
                     <input
                         type="password"
+                        id="creator-passphrase"
+                        name="creator-passphrase"
+                        autoComplete="new-password"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        spellCheck={false}
                         placeholder="Enter the Secret..."
                         className="w-full bg-transparent border-b border-dream-purple/10 py-4 text-center font-serif text-2xl outline-none placeholder:text-dream-purple/5 text-dream-purple"
                         value={passphrase}

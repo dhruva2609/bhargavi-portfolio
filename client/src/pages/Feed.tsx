@@ -27,7 +27,7 @@ const Feed = () => {
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] md:w-[600px] opacity-[0.03] pointer-events-none -z-10">
                     <img src={bookSvg} alt="Book Background" className="w-full h-auto" />
                 </div>
-                <h1 className="font-serif text-[clamp(3.5rem,8vw,8rem)] text-dream-purple italic mb-4 leading-none relative z-10">Recent Echoes</h1>
+                <h1 className="font-serif text-[clamp(2.2rem,6vw,4.5rem)] text-dream-purple italic mb-4 leading-none relative z-10">Recent Echoes</h1>
                 <p className="metadata-precise text-dream-purple/60 block mt-6">Selected fragments from the archive</p>
             </header>
 
@@ -41,7 +41,7 @@ const Feed = () => {
                         <SnippetCard 
                             id={post._id}
                             content={post.content || post.body} 
-                            date={post.date || new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} 
+                            date={post.date || (post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : 'Recently')} 
                             initialLikes={post.likes || 0}
                         />
                     </div>

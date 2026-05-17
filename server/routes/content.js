@@ -523,6 +523,46 @@ router.get('/instagram/thumbnail', asyncHandler(async (req, res) => {
     }
 }));
 
+// Image proxy to bypass Google Drive's third-party cookie and CORS restrictions
+router.get('/image-proxy', asyncHandler(async (req, res) => {
+    try {
+        const { url, id } = req.query;
+        let driveId = id;
+        
+        if (!driveId && url) {
+            // Extract file ID from URL if provided
+            const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
+            if (idMatch && idMatch[1]) {
+                driveId = idMatch[1];
+            }
+        }
+        
+        if (!driveId) {
+            return res.status(400).json({ error: 'No image identifier provided' });
+        }
+        
+        // Fetch from Google Drive thumbnail endpoint which is very fast and doesn't require auth for public files
+        const driveUrl = `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000`;
+        
+        const response = await axios.get(driveUrl, {
+            responseType: 'arraybuffer',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        });
+        
+        const contentType = response.headers['content-type'] || 'image/jpeg';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+        
+        res.send(Buffer.from(response.data));
+    } catch (err) {
+        console.error('Drive proxy error:', err.message);
+        // Fallback to a curated Unsplash image if proxy fails so the UI never breaks
+        res.redirect('https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&q=80&w=800');
+    }
+}));
+
 router.post('/instagram', isCreator, asyncHandler(async (req, res) => {
     let { url, label, image } = req.body;
     

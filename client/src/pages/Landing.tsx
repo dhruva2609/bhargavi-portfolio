@@ -6,6 +6,7 @@ import { useNarrative } from '../hooks/useNarrative';
 import bookSvg from '../assets/book.svg';
 import rosepenSvg from '../assets/rosepenhand.svg';
 import InstagramPost from '../components/InstagramPost';
+import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 const editorialEase: BezierDefinition = [0.22, 1, 0.36, 1];
@@ -184,9 +185,9 @@ const Landing = () => {
                             transition={{ duration: 1.2, delay: 0.9, ease: editorialEase }}
                             className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start"
                         >
-                             <a href="/muse" className="btn-editorial">
+                             <Link to="/muse" className="btn-editorial">
                                  <span>Enter the Muse</span> <ArrowRight size={12} />
-                             </a>
+                             </Link>
                          </motion.div>
                     </motion.div>
 
@@ -443,7 +444,7 @@ const Landing = () => {
                 >
                     <span className="metadata-precise text-dream-pink/60 mb-8 md:mb-12 block">The Final Note</span>
 
-                    <h2 className="text-[clamp(3rem,10vw,8rem)] mb-8 md:mb-12 leading-none italic font-light tracking-tighter text-dream-pink">
+                    <h2 className="text-[clamp(2.2rem,6vw,4.5rem)] mb-8 md:mb-12 leading-none italic font-light tracking-tighter text-dream-pink">
                         Sanctuary
                     </h2>
 
@@ -464,15 +465,15 @@ const Landing = () => {
                         transition={{ duration: 1, delay: 0.5 }}
                         className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6"
                     >
-                        <a
-                            href="/muse"
+                        <Link
+                            to="/muse"
                             className="group relative inline-flex items-center gap-3 px-8 md:px-14 py-4 md:py-5 border-2 border-dream-pink/20 hover:border-dream-pink rounded-full transition-all duration-700 overflow-hidden"
                         >
                             <span className="relative z-10 metadata-precise text-[9px] md:text-[10px] text-dream-pink/80 group-hover:text-dream-purple transition-colors duration-500">
                                 Enter the Dream
                             </span>
                             <div className="absolute inset-0 bg-dream-pink scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-700 rounded-full" />
-                        </a>
+                        </Link>
 
                         <a
                             href="mailto:dhruvapandya86@gmail.com"
