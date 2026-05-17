@@ -6,27 +6,36 @@ import Song from '../models/Song.js';
 import Instagram from '../models/Instagram.js';
 import mongoose from 'mongoose';
 import axios from 'axios';
-import nodemailer from 'nodemailer';
 import { welcomeTemplate, inquiryTemplate, broadcastTemplate } from '../utils/emailTemplates.js';
 
-// Helper to create a robust secure SMTP email transporter (works on both local and production)
-const createMailTransporter = () => {
-    const user = process.env.EMAIL_USER;
-    const pass = process.env.EMAIL_PASS ? process.env.EMAIL_PASS.replace(/\s/g, '') : null;
-    
-    if (!user || !pass) {
-        return null;
+// Helper to send email using Brevo REST API (bypasses Render SMTP blocking)
+const sendBrevoEmail = async (toEmail, subject, htmlContent) => {
+    if (!process.env.BREVO_API_KEY) {
+        console.warn("⚠️ Email skipped: BREVO_API_KEY missing.");
+        return;
     }
 
-    return nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true, // Use SSL/TLS for secure port 465
-        auth: { user, pass },
-        tls: {
-            rejectUnauthorized: false // Prevents connection blocks due to self-signed certs in hosting containers
-        }
-    });
+    const fromEmail = process.env.BREVO_FROM_EMAIL || 'test@example.com';
+    const url = 'https://api.brevo.com/v3/smtp/email';
+    const data = {
+        sender: { name: "Bhargavi's Editorial", email: fromEmail },
+        to: [{ email: toEmail }],
+        subject: subject,
+        htmlContent: htmlContent
+    };
+
+    try {
+        await axios.post(url, data, {
+            headers: {
+                'api-key': process.env.BREVO_API_KEY,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+    } catch (err) {
+        console.error("❌ Brevo API Error:", err.response ? JSON.stringify(err.response.data) : err.message);
+        throw err;
+    }
 };
 
 // Helper to broadcast to all subscribers
@@ -35,24 +44,19 @@ const broadcastUpdate = async (type, title, summary, link) => {
         const subscribers = await Subscriber.find({});
         if (subscribers.length === 0) return;
 
-        const user = process.env.EMAIL_USER;
-        const bTransporter = createMailTransporter();
-        
-        if (!bTransporter) {
-            console.warn("⚠️ Broadcast skipped: Email credentials missing or invalid.");
+        if (!process.env.BREVO_API_KEY) {
+            console.warn("⚠️ Broadcast skipped: Brevo API Key missing.");
             return;
         }
 
         console.log(`📣 Broadcasting ${type} to ${subscribers.length} subscribers...`);
 
         const emailPromises = subscribers.map(sub => {
-            const mailOptions = {
-                from: `"Bhargavi's Editorial" <${user}>`,
-                to: sub.email,
-                subject: `New Echo: ${title}`,
-                html: broadcastTemplate(type, title, summary, link)
-            };
-            return bTransporter.sendMail(mailOptions).catch(e => console.warn(`Failed for ${sub.email}: ${e.message}`));
+            return sendBrevoEmail(
+                sub.email,
+                `New Echo: ${title}`,
+                broadcastTemplate(type, title, summary, link)
+            ).catch(e => console.warn(`Failed for ${sub.email}: ${e.message}`));
         });
 
         await Promise.allSettled(emailPromises);
@@ -209,19 +213,15 @@ router.post('/broadcast', isCreator, asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "No subscribers found in the archive." });
     }
 
-    const user = process.env.EMAIL_USER;
-    const bTransporter = createMailTransporter();
-
-    if (!bTransporter) {
-        return res.status(500).json({ message: "Email credentials are not set." });
+    if (!process.env.BREVO_API_KEY) {
+        return res.status(500).json({ message: "Brevo API Key is not set." });
     }
 
     const emailPromises = subscribers.map(sub => {
-        const mailOptions = {
-            from: `"Bhargavi's Editorial" <${user}>`,
-            to: sub.email,
-            subject: title,
-            html: `
+        return sendBrevoEmail(
+            sub.email,
+            title,
+            `
                 <div style="font-family: serif; color: #2c2c2c; max-width: 600px; margin: 0 auto; line-height: 1.6;">
                     <h1 style="border-bottom: 1px solid #eee; padding-bottom: 10px; font-weight: normal;">${title}</h1>
                     <p style="font-style: italic; color: #666;">${summary}</p>
@@ -231,8 +231,7 @@ router.post('/broadcast', isCreator, asyncHandler(async (req, res) => {
                     <p style="font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px;">You are receiving this as a member of The Midnight Bulletin.</p>
                 </div>
             `
-        };
-        return bTransporter.sendMail(mailOptions);
+        ).catch(e => console.warn(`Broadcast failed for ${sub.email}: ${e.message}`));
     });
 
     await Promise.allSettled(emailPromises);
@@ -352,26 +351,20 @@ router.post('/collaborate', asyncHandler(async (req, res) => {
   await newMessage.save();
   console.log(`✅ Message saved to database.`);
 
-  // Lazy-initialize Transporter
-  const user = process.env.EMAIL_USER;
-  const receiver = process.env.EMAIL_RECEIVER || 'dhruvapandya86@gmail.com';
-  const dynamicTransporter = createMailTransporter();
+  const receiver = process.env.BREVO_RECEIVER || 'dhruvapandya86@gmail.com';
 
-  if (dynamicTransporter) {
+  if (process.env.BREVO_API_KEY) {
     console.log(`✉️ Sending notification to ${receiver}...`);
 
-    const mailOptions = {
-      from: user,
-      to: receiver,
-      subject: `New Collaboration Inquiry from ${name} [via ${source || 'Portfolio'}]`,
-      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
-      html: inquiryTemplate(name, email, message, source)
-    };
-
-    await dynamicTransporter.sendMail(mailOptions);
+    await sendBrevoEmail(
+      receiver,
+      `New Collaboration Inquiry from ${name} [via ${source || 'Portfolio'}]`,
+      inquiryTemplate(name, email, message, source)
+    );
+    
     console.log(`🚀 Success: Notification sent to author.`);
   } else {
-    console.warn("⚠️ Warning: Email notification skipped. Check server/.env credentials.");
+    console.warn("⚠️ Warning: Email notification skipped. Missing BREVO_API_KEY.");
   }
 
   res.status(201).json({ message: "Your message has been etched into the archive." });
@@ -398,28 +391,18 @@ router.post('/subscribe', asyncHandler(async (req, res) => {
             console.log(`ℹ️ ${email} is already a subscriber. Sending another welcome echo for ${source || 'this section'}.`);
         }
 
-        // Lazy-initialize Transporter
-        const user = process.env.EMAIL_USER;
-        const dynamicTransporter = createMailTransporter();
+        if (process.env.BREVO_API_KEY) {
+            console.log(`✉️ Sending welcome email to ${email}...`);
 
-        if (dynamicTransporter) {
-            console.log(`✉️ Initializing mailer for ${user}...`);
-
-            const welcomeOptions = {
-                from: `"The Midnight Bulletin" <${user}>`,
-                to: email,
-                subject: `Welcome to ${source || 'The Archive'}`,
-                text: `Thank you for joining the Midnight Bulletin. You are now part of the silent archive. You will receive echoes from ${source || 'the sanctuary'} whenever new content is etched.`,
-                html: welcomeTemplate(source)
-            };
-
-            await dynamicTransporter.sendMail(welcomeOptions);
+            await sendBrevoEmail(
+                email,
+                `Welcome to ${source || 'The Archive'}`,
+                welcomeTemplate(source)
+            );
+            
             console.log(`🚀 Success: Welcome email sent to ${email}`);
-        }
- else {
-            console.warn("⚠️ Error: EMAIL_USER or EMAIL_PASS is missing in server/.env");
-            console.log("Current User:", user || "NOT SET");
-            console.log("Current Pass:", pass ? "STARS(***)" : "NOT SET");
+        } else {
+            console.warn("⚠️ Error: BREVO_API_KEY is missing in server/.env");
         }
 
         res.status(201).json({ message: "You have been added to the Midnight Bulletin." });
