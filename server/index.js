@@ -85,8 +85,24 @@ if (!MONGO_URI) {
 }
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('✨ Poetic connection to MongoDB established.'))
-  .catch(err => console.error('🥀 Connection to the inkwell failed:', err));
+  .then(() => {
+    const dbName = mongoose.connection.name;
+    console.log(`✨ Poetic connection to MongoDB established. [Database: ${dbName}]`);
+  })
+  .catch(err => {
+    console.error('🥀 Connection to the inkwell failed:');
+    console.error('--- Error Details ---');
+    console.error(err.message);
+    console.error('----------------------');
+  });
+
+mongoose.connection.on('error', err => {
+  console.error('❌ MongoDB runtime error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected. Attempting to reconnect...');
+});
 
 // Routes
 app.use('/api/content', contentRouter);
