@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Editorial Pearl - Full Stack Deployment Wrapper",
   "scripts": {
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "install-all": "npm install --legacy-peer-deps && cd client && npm install --legacy-peer-deps && cd ../server && npm install --legacy-peer-deps",
     "build-client": "cd client && npm run build",
     "build": "npm run install-all && npm run build-client",
     "start": "cd server && npm start",
