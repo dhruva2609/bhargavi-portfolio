@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Book, Plus, ChevronRight, Save, Edit3, Loader2, Music, Heart } from 'lucide-react';
 import featherSvg from '../assets/Feather.svg';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+import { API_URL, transformDriveUrl } from '../config';
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 const Creator = () => {
@@ -530,7 +530,7 @@ const Creator = () => {
                                         style={{ backgroundColor: 'var(--color-glass-bg)' }}
                                     >
                                         <div className="aspect-square rounded-xl overflow-hidden mb-6 relative group/img">
-                                            <img src={scene.image} alt={scene.label} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                            <img src={transformDriveUrl(scene.image)} alt={scene.label} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                                             <div className="absolute inset-0 bg-dream-purple/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                                                 <span className="metadata-precise text-[8px] text-white uppercase tracking-widest">Active Scene</span>
                                             </div>

@@ -1,24 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-
-const transformDriveUrl = (url: string) => {
-    if (!url) return url;
-    if (url.includes('image-proxy')) {
-        if (url.startsWith('/api') && API_URL) {
-            return `${API_URL}${url}`;
-        }
-        return url;
-    }
-    if (!url.includes('drive.google.com') && !url.includes('docs.google.com') && !url.includes('lh3.googleusercontent.com')) return url;
-    
-    const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
-    if (idMatch && idMatch[1]) {
-        return `${API_URL}/api/content/image-proxy?id=${idMatch[1]}`;
-    }
-    return url;
-};
+import { API_URL, transformDriveUrl } from '../config';
 
 const SAMPLE_DATA = {
     snippets: [

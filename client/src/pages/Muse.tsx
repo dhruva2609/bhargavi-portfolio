@@ -7,7 +7,7 @@ import typewriterSvg from '../assets/violettypewriter.svg';
 import featherSvg from '../assets/Feather.svg';
 import SubscribeForm from '../components/SubscribeForm';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+import { API_URL } from '../config';
 const editorialEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
 const MOCK_BOOKS = [

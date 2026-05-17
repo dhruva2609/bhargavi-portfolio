@@ -8,7 +8,7 @@ import FloatingGarden from './FloatingGarden';
 import Stardust from './Stardust';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+import { API_URL } from '../config';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();

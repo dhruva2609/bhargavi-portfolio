@@ -4,7 +4,7 @@ import { Heart, Quote } from 'lucide-react';
 
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
+import { API_URL } from '../config';
 
 const SnippetCard = ({ id, content, date, initialLikes }: { id: string; content: string; date: string; initialLikes: number }) => {
     const [likes, setLikes] = useState(initialLikes || 0);

@@ -3,20 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || '';
-
-// Google Drive blocks direct embedding of images on third-party sites due to CORS.
-// This transformer takes any Drive link and converts it to a thumbnail endpoint that IS allowed to be embedded.
-const transformDriveUrl = (url: string) => {
-    if (!url) return url;
-    if (!url.includes('drive.google.com') && !url.includes('docs.google.com')) return url;
-
-    const idMatch = url.match(/[?&]id=([^&]+)/) || url.match(/\/d\/([^/]+)/);
-    if (idMatch && idMatch[1]) {
-        return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
-    }
-    return url;
-};
+import { API_URL, transformDriveUrl } from '../config';
 
 export const InstagramIcon = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -52,7 +39,10 @@ const InstagramPost: React.FC<InstagramPostProps> = ({ url, label, placeholderIm
 
     useEffect(() => {
         const fetchThumbnail = async () => {
-            if (placeholderImage) return; // Don't fetch if we already have a drive image or direct link
+            if (placeholderImage) {
+                setThumbnailLoaded(true);
+                return;
+            }
 
             try {
                 const sanitizedUrl = url.split('?')[0];
