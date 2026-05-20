@@ -241,7 +241,20 @@ router.post('/broadcast', isCreator, asyncHandler(async (req, res) => {
 // --- SNIPPETS (FEED) ---
 
 router.get('/snippets', asyncHandler(async (req, res) => {
-  const snippets = await Feed.find().sort({ createdAt: -1 });
+  const page = parseInt(req.query.page);
+  const limit = parseInt(req.query.limit);
+  
+  let query = Feed.find().sort({ createdAt: -1 }).select('content likes createdAt');
+  
+  if (page) {
+    const limitVal = limit || 10;
+    const skip = (page - 1) * limitVal;
+    query = query.skip(skip).limit(limitVal);
+  } else if (limit) {
+    query = query.limit(limit);
+  }
+  
+  const snippets = await query;
   res.json(snippets);
 }));
 

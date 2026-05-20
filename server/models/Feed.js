@@ -15,4 +15,6 @@ const feedSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+feedSchema.index({ createdAt: -1 });
+
 export default mongoose.model('Feed', feedSchema);

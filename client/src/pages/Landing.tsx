@@ -90,7 +90,7 @@ const StatCard = ({ value, label, delay = 0 }: { value: string; label: string; d
 
 // ─────────────────────────────────────────────────────────────────
 const Landing = () => {
-    const { data: posts, loading } = useNarrative('snippets');
+    const { data: posts, loading } = useNarrative('snippets', 5);
     const { scrollYProgress } = useScroll();
     const smoothScroll = useSpring(scrollYProgress, { stiffness: 40, damping: 20 });
 
@@ -241,7 +241,7 @@ const Landing = () => {
             {/* ───────────────────────────────────────────────────────
                 SECTION 2 — Echoes: Split-screen archive feed
             ─────────────────────────────────────────────────────── */}
-            <section className="min-h-screen grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5 relative overflow-hidden">
+            <section className="grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-dream-purple/5 relative overflow-hidden py-12 md:py-20">
 
                 {/* Left sticky panel */}
                 <div className="lg:col-span-5 flex flex-col justify-start p-8 md:p-16 border-b lg:border-b-0 lg:border-r border-dream-purple/5 bg-transparent relative overflow-hidden">
@@ -272,10 +272,25 @@ const Landing = () => {
                             whileInView={{ opacity: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 1, delay: 0.2 }}
-                            className="text-charcoal/50 text-base md:text-xl leading-relaxed max-w-sm font-serif italic mb-8 md:mb-12"
+                            className="text-charcoal/50 text-base md:text-xl leading-relaxed max-w-sm font-serif italic mb-8"
                         >
                             A curated feed of architectural fragments and literary snapshots.
                         </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: 0.3 }}
+                            className="mb-8 md:mb-12"
+                        >
+                            <Link 
+                                to="/snippets" 
+                                className="metadata-precise text-[10px] text-cherry hover:text-dream-purple transition-colors inline-flex items-center gap-2 group border-b border-cherry/20 pb-1"
+                            >
+                                Enter the Archive <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </motion.div>
                     </div>
 
                     {/* Book SVG */}
@@ -297,13 +312,13 @@ const Landing = () => {
                 </div>
 
                 {/* Right: scrollable feed */}
-                <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar p-6 md:p-12 bg-transparent">
+                <div className="lg:col-span-7 p-6 md:p-12 bg-transparent">
                     <motion.div
                         variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
                         initial="hidden"
                         whileInView="visible"
                         viewport={{ once: true, amount: 0.05 }}
-                        className="flex flex-col gap-8 md:gap-16 max-w-xl mx-auto pb-32"
+                        className="flex flex-col gap-8 md:gap-16 max-w-xl mx-auto pb-12"
                     >
                         {loading ? (
                             <div className="flex flex-col gap-8 pt-16">
@@ -312,15 +327,19 @@ const Landing = () => {
                                 ))}
                             </div>
                         ) : (
-                            posts.map((post: any, idx: number) => (
-                                <SnippetCard
-                                    key={post._id || idx}
-                                    id={post._id}
-                                    content={post.content || post.body}
-                                    date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently'}
-                                    initialLikes={post.likes || 0}
-                                />
-                            ))
+                            <>
+                                {posts.map((post: any, idx: number) => (
+                                    <SnippetCard
+                                        key={post._id || idx}
+                                        id={post._id}
+                                        content={post.content || post.body}
+                                        date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently'}
+                                        initialLikes={post.likes || 0}
+                                    />
+                                ))}
+
+
+                            </>
                         )}
                     </motion.div>
                 </div>

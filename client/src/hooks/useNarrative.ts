@@ -78,7 +78,7 @@ const SAMPLE_DATA = {
     ]
 };
 
-export const useNarrative = (endpoint: 'stories' | 'snippets' | 'instagram') => {
+export const useNarrative = (endpoint: 'stories' | 'snippets' | 'instagram', limit?: number) => {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -88,7 +88,10 @@ export const useNarrative = (endpoint: 'stories' | 'snippets' | 'instagram') => 
             try {
                 setLoading(true);
                 setError(null);
-                const res = await axios.get(`${API_URL}/api/content/${endpoint}`);
+                const url = limit 
+                    ? `${API_URL}/api/content/${endpoint}?limit=${limit}`
+                    : `${API_URL}/api/content/${endpoint}`;
+                const res = await axios.get(url);
                 
                 if (res.data && res.data.length > 0) {
                     const transformedData = res.data.map((item: any) => ({
@@ -98,18 +101,21 @@ export const useNarrative = (endpoint: 'stories' | 'snippets' | 'instagram') => 
                     }));
                     setData(transformedData);
                 } else {
-                    setData(SAMPLE_DATA[endpoint]);
+                    const sample = SAMPLE_DATA[endpoint];
+                    setData(limit ? sample.slice(0, limit) : sample);
                 }
             } catch (err) {
                 console.error("Failed to fetch from the inkwell, using archive samples:", err);
                 setError("Archive connection weak. Displaying cached snapshots.");
-                setData(SAMPLE_DATA[endpoint]);
+                const sample = SAMPLE_DATA[endpoint];
+                setData(limit ? sample.slice(0, limit) : sample);
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, [endpoint]);
+    }, [endpoint, limit]);
 
     return { data, loading, error };
 };
+
